@@ -285,7 +285,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     int* b;
     cudaMallocManaged(&a, N * sizeof(int));
     cudaMallocManaged(&b, N * sizeof(int));
-    int NUM_SM = devProp.multiProcessorCount;
+    int NUM_SM = 80;
     cudaMallocManaged((void **)&global_sense,sizeof(bool));
     cudaMallocManaged((void **)&done,sizeof(bool));
     cudaMallocManaged((void **)&perSMsense,NUM_SM*sizeof(bool));
