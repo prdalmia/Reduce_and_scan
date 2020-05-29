@@ -280,7 +280,7 @@ __device__ void __gpu_sync(int blocks_to_synch)
      
  for (unsigned int n = N; n > 1; n = (n + blockDim.x - 1) / blockDim.x) {
     reduce_kernel_d<<<(n + blockDim.x - 1) / blockDim.x, blockDim.x,
-    blockDim.x * sizeof(int)>>>(g_idata, g_odata, N);
+    blockDim.x * sizeof(int)>>>(g_idata, g_odata, n);
     kernelAtomicTreeBarrierUniqSRB<<<(n + blockDim.x - 1) / blockDim.x, blockDim.x>>>(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
     // Swap input and output arrays
     if((threadIdx.x + blockDim.x*blockIdx.x) == 0)
