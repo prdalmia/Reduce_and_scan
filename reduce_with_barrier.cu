@@ -295,7 +295,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaMallocManaged((void **)&global_sense,sizeof(bool));
     cudaMallocManaged((void **)&done,sizeof(bool));
     cudaMallocManaged((void **)&perSMsense,NUM_SM*sizeof(bool));
-    cudaMallocManaged((void **)&last_block,sizeof(unsigned int)*(NUM_SM)));
+    cudaMallocManaged((void **)&last_block,sizeof(unsigned int)*(NUM_SM));
     cudaMallocManaged((void **)&local_count,  NUM_SM*sizeof(unsigned int));
     cudaMallocManaged((void **)&global_count,sizeof(unsigned int));
     cudaMemset(global_sense, false, sizeof(bool));
