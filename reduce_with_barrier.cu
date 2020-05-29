@@ -1,6 +1,7 @@
 // Author: Nic Olsen
 
 #include <iostream>
+#include <stdio.h>
 #include "reduce.cuh"
 
 inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
