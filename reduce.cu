@@ -40,7 +40,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaMemcpy(a, arr, N * sizeof(int), cudaMemcpyHostToDevice);
 
  //   for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
-        reduce_kernel<<<(n + threads_per_block - 1) / threads_per_block, threads_per_block,
+        reduce_kernel<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
                         threads_per_block * sizeof(int)>>>(a, b, n);
 
         // Swap input and output arrays
