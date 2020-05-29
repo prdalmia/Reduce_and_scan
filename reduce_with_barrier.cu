@@ -285,7 +285,7 @@ __device__ void __gpu_sync(int blocks_to_synch)
     // Swap input and output arrays
     if((threadIdx.x + blockDim.x*blockIdx.x) == 0)
 {
-    printf(" barrier with grid dim %d\n", (n + blockDim.x - 1/blockDim.x));
+    printf(" barrier with grid dim %d\n", ((n + blockDim.x - 1)/blockDim.x));
 }
     int* tmp = g_idata;
     g_idata = g_odata;
