@@ -175,7 +175,7 @@ cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense
 }
 
 
-__device__ void kernelAtomicTreeBarrierUniqSRB( bool * global_sense,
+__global__ void kernelAtomicTreeBarrierUniqSRB( bool * global_sense,
 bool * perSMsense,
 bool * done,
 unsigned int* global_count,
@@ -233,7 +233,7 @@ __device__ void __gpu_sync(int blocks_to_synch)
     __syncthreads();
 }
 */
-inline __device__ void reduce_kernel_d(const int* g_idata, int* g_odata, unsigned int n) {
+ __global__ void reduce_kernel_d(const int* g_idata, int* g_odata, unsigned int n) {
     extern __shared__ int sdata[];
 
     unsigned int tid = threadIdx.x;
@@ -277,7 +277,7 @@ inline __device__ void reduce_kernel_d(const int* g_idata, int* g_odata, unsigne
     blockDim.x * sizeof(int)>>>(g_idata, g_odata, N);
     kernelAtomicTreeBarrierUniqSRB<<<(N + blockDim.x - 1) / blockDim.x, blockDim.x>>>(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
     // Swap input and output arrays
-    int* tmp = g_idata;
+    const int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
  }
