@@ -233,17 +233,7 @@ __device__ void __gpu_sync(int blocks_to_synch)
     __syncthreads();
 }
 */
-__global__ void reduce_kernel(const int* g_idata, 
-                              int* g_odata, 
-                              unsigned int n, 
-                              bool * global_sense,
-                              bool * perSMsense,
-                              bool * done,
-                              unsigned int* global_count,
-                              unsigned int* local_count,
-                              unsigned int* last_block,
-                              const int NUM_SM) {
-     
+inline __global__ void reduce_kernel_d(const int* g_idata, int* g_odata, unsigned int n) {
     extern __shared__ int sdata[];
 
     unsigned int tid = threadIdx.x;
@@ -269,13 +259,29 @@ __global__ void reduce_kernel(const int* g_idata,
         g_odata[blockIdx.x] = sdata[0];
     }
 
-    kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
-   // for (unsigned int s = 0; s < gridDim.x; s ++ ) {
-   //     if (tid ==0 && blockIdx.x == 0) {
-   //         g_odata[0] += g_odata[s]
-   //     }
-   //     __syncthreads();
-   // }
+}
+
+ __global__ void reduce_kernel(const int* g_idata, 
+                              int* g_odata, 
+                              unsigned int n, 
+                              bool * global_sense,
+                              bool * perSMsense,
+                              bool * done,
+                              unsigned int* global_count,
+                              unsigned int* local_count,
+                              unsigned int* last_block,
+                              const int NUM_SM) {
+     
+ for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
+    reduce_kernel_d<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
+    threads_per_block * sizeof(int)>>>(a, b, N);
+    kernelAtomicTreeBarrierUniqSRB<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block>>>(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
+    // Swap input and output arrays
+    int* tmp = a;
+    a = b;
+    b = tmp;
+ }
+
 
 }
 
@@ -314,9 +320,9 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
                         threads_per_block * sizeof(int)>>>(a, b, N, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
 
         // Swap input and output arrays
-        int* tmp = a;
-        a = b;
-        b = tmp;
+        //int* tmp = a;
+        //a = b;
+        //b = tmp;
    // }
     cudaDeviceSynchronize();
 
