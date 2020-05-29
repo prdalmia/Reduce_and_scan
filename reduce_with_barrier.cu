@@ -288,7 +288,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     unsigned int *last_block;
     bool * global_sense;
     bool* perSMsense;
-    bool * done
+    bool * done;
     cudaMallocManaged(&a, N * sizeof(int));
     cudaMallocManaged(&b, N * sizeof(int));
     int NUM_SM = 80;
