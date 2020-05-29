@@ -284,12 +284,12 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaMallocManaged(&a, N * sizeof(int));
     cudaMallocManaged(&b, N * sizeof(int));
     int NUM_SM = devProp.multiProcessorCount;
-    CUDA_SAFE_CALL(cudaMalloc((void **)&global_sense,sizeof(bool)));
-    CUDA_SAFE_CALL(cudaMalloc((void **)&done,sizeof(bool)));
-    CUDA_SAFE_CALL(cudaMalloc((void **)&perSMsense,NUM_SM*sizeof(bool)));
-    CUDA_SAFE_CALL(cudaMalloc((void **)&last_block,sizeof(unsigned int)*(NUM_SM)));
-    CUDA_SAFE_CALL(cudaMalloc((void **)&local_count,  NUM_SM*sizeof(unsigned int)));
-    CUDA_SAFE_CALL(cudaMalloc((void **)&global_count,sizeof(unsigned int)));
+    cudaMallocManaged((void **)&global_sense,sizeof(bool));
+    cudaMallocManaged((void **)&done,sizeof(bool));
+    cudaMallocManaged((void **)&perSMsense,NUM_SM*sizeof(bool));
+    cudaMallocManaged((void **)&last_block,sizeof(unsigned int)*(NUM_SM)));
+    cudaMallocManaged((void **)&local_count,  NUM_SM*sizeof(unsigned int));
+    cudaMallocManaged((void **)&global_count,sizeof(unsigned int));
     cudaMemset(global_sense, false, sizeof(bool));
     cudaMemset(done, false, sizeof(bool));
     cudaMemset(global_count, 0, sizeof(unsigned int));
