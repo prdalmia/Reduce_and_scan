@@ -263,7 +263,7 @@ inline __global__ void reduce_kernel_d(const int* g_idata, int* g_odata, unsigne
 
  __global__ void reduce_kernel(const int* g_idata, 
                               int* g_odata, 
-                              unsigned int n, 
+                              unsigned int N, 
                               bool * global_sense,
                               bool * perSMsense,
                               bool * done,
@@ -272,14 +272,14 @@ inline __global__ void reduce_kernel_d(const int* g_idata, int* g_odata, unsigne
                               unsigned int* last_block,
                               const int NUM_SM) {
      
- for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
-    reduce_kernel_d<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
-    threads_per_block * sizeof(int)>>>(a, b, N);
-    kernelAtomicTreeBarrierUniqSRB<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block>>>(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
+ for (unsigned int n = N; n > 1; n = (n + blockDim.x - 1) / blockDim.x) {
+    reduce_kernel_d<<<(N + blockDim.x - 1) / blockDim.x, blockDim.x,
+    blockDim.x * sizeof(int)>>>(a, b, N);
+    kernelAtomicTreeBarrierUniqSRB<<<(N + blockDim.x - 1) / blockDim.x, blockDim.x>>>(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
     // Swap input and output arrays
-    int* tmp = a;
-    a = b;
-    b = tmp;
+    int* tmp = g_idata;
+    g_idata = g_odata;
+    g_odata = tmp;
  }
 
 
