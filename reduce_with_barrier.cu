@@ -279,11 +279,15 @@ __device__ void __gpu_sync(int blocks_to_synch)
                               const int NUM_SM) {
      
  for (unsigned int n = N; n > 1; n = (n + blockDim.x - 1) / blockDim.x) {
-    reduce_kernel_d<<<(N + blockDim.x - 1) / blockDim.x, blockDim.x,
+    reduce_kernel_d<<<(n + blockDim.x - 1) / blockDim.x, blockDim.x,
     blockDim.x * sizeof(int)>>>(g_idata, g_odata, N);
-    kernelAtomicTreeBarrierUniqSRB<<<(N + blockDim.x - 1) / blockDim.x, blockDim.x>>>(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
+    kernelAtomicTreeBarrierUniqSRB<<<(n + blockDim.x - 1) / blockDim.x, blockDim.x>>>(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
     // Swap input and output arrays
-     int* tmp = g_idata;
+    if((thredIdx.x + blockDim.x*blockIdx.x) == 0)
+{
+    printf(" barrier with grid dim %d\n", n + blockDim.x - 1);
+}
+    int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
  }
