@@ -28,6 +28,7 @@ __global__ void reduce_kernel(const int* g_idata, int* g_odata, unsigned int n) 
     if (tid == 0) {
         g_odata[blockIdx.x] = sdata[0];
     }
+
 }
 
 __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_block) {
@@ -38,7 +39,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaMallocManaged(&b, N * sizeof(int));
     cudaMemcpy(a, arr, N * sizeof(int), cudaMemcpyHostToDevice);
 
-    for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
+ //   for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
         reduce_kernel<<<(n + threads_per_block - 1) / threads_per_block, threads_per_block,
                         threads_per_block * sizeof(int)>>>(a, b, n);
 
@@ -46,7 +47,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
         int* tmp = a;
         a = b;
         b = tmp;
-    }
+ // }  
     cudaDeviceSynchronize();
 
     int sum = a[0];
