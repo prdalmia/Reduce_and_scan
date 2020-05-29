@@ -214,6 +214,7 @@ if(isMasterThread){
 __syncthreads();
 }
 
+/*
 __device__ void __gpu_sync(int blocks_to_synch)
 {
     __syncthreads();
@@ -231,6 +232,7 @@ __device__ void __gpu_sync(int blocks_to_synch)
     }
     __syncthreads();
 }
+*/
 __global__ void reduce_kernel(const int* g_idata, 
                               int* g_odata, 
                               unsigned int n, 
