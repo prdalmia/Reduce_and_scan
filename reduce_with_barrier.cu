@@ -312,7 +312,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaMemset(global_count, 0, sizeof(unsigned int));
 
     for (int i = 0; i < NUM_SM; ++i) {
-       cudaMemset(&perSMsense[i], true, sizeof(bool));
+       cudaMemset(&perSMsense[i], false, sizeof(bool));
        cudaMemset(&local_count[i], 0, sizeof(unsigned int));
        cudaMemset(&last_block[i], 0, sizeof(unsigned int));
      }
