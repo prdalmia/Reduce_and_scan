@@ -170,6 +170,9 @@ __threadfence();
 __syncthreads();
 }    
 } else { // if only 1 TB on the SM, no need for the local barriers
+    if(isMasterThread){
+    perSMsense[smID] = ~perSMsense[smID]
+    }
 cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense[smID], global_sense);
 }
 }
