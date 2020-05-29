@@ -41,7 +41,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
 
  //   for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
         reduce_kernel<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
-                        threads_per_block * sizeof(int)>>>(a, b, n);
+                        threads_per_block * sizeof(int)>>>(a, b, N);
 
         // Swap input and output arrays
         int* tmp = a;
