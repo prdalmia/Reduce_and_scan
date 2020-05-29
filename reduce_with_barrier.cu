@@ -204,7 +204,9 @@ const int perSM_blockID = (blockIdx.x / numBlocksAtBarr);
 
 int numTBs_perSM = (int)ceil((float)gridDim.x / numBlocksAtBarr);
 
-
+if(isMasterThread && smID == 0 && blockIdx.x == 0){
+    printf("Launching barrier\n");
+}
 joinBarrier_helperSRB(global_sense, perSMsense, done, global_count, local_count, last_block,
 numBlocksAtBarr, smID, perSM_blockID, numTBs_perSM,
 isMasterThread);
