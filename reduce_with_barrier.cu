@@ -241,7 +241,7 @@ __global__ void reduce_kernel(const int* g_idata,
                               unsigned int* local_count,
                               unsigned int* last_block,
                               const int NUM_SM) {
-   
+     
     extern __shared__ int sdata[];
 
     unsigned int tid = threadIdx.x;
@@ -266,8 +266,14 @@ __global__ void reduce_kernel(const int* g_idata,
     if (tid == 0) {
         g_odata[blockIdx.x] = sdata[0];
     }
+
     kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
-    add_kernel
+   // for (unsigned int s = 0; s < gridDim.x; s ++ ) {
+   //     if (tid ==0 && blockIdx.x == 0) {
+   //         g_odata[0] += g_odata[s]
+   //     }
+   //     __syncthreads();
+   // }
 
 }
 
@@ -295,15 +301,15 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
      }
     cudaMemcpy(a, arr, N * sizeof(int), cudaMemcpyHostToDevice);
 
-    for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
-        reduce_kernel<<<(n + threads_per_block - 1) / threads_per_block, threads_per_block,
-                        threads_per_block * sizeof(int)>>>(a, b, n, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
+    //for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
+        reduce_kernel<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
+                        threads_per_block * sizeof(int)>>>(a, b, N, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
 
         // Swap input and output arrays
         int* tmp = a;
         a = b;
         b = tmp;
-    }
+   // }
     cudaDeviceSynchronize();
 
     int sum = a[0];
