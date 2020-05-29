@@ -283,6 +283,12 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     // Workspace NOTE: Could be smaller
     int* a;
     int* b;
+    unsigned int* global_count;
+    unsigned int* local_count; 
+    unsigned int *last_block;
+    bool * global_sense;
+    bool* perSMsense;
+    bool * done
     cudaMallocManaged(&a, N * sizeof(int));
     cudaMallocManaged(&b, N * sizeof(int));
     int NUM_SM = 80;
