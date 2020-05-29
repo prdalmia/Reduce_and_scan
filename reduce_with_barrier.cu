@@ -283,7 +283,7 @@ __device__ void __gpu_sync(int blocks_to_synch)
     blockDim.x * sizeof(int)>>>(g_idata, g_odata, N);
     kernelAtomicTreeBarrierUniqSRB<<<(n + blockDim.x - 1) / blockDim.x, blockDim.x>>>(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
     // Swap input and output arrays
-    if((thredIdx.x + blockDim.x*blockIdx.x) == 0)
+    if((threadIdx.x + blockDim.x*blockIdx.x) == 0)
 {
     printf(" barrier with grid dim %d\n", n + blockDim.x - 1);
 }
