@@ -233,7 +233,7 @@ __device__ void __gpu_sync(int blocks_to_synch)
     __syncthreads();
 }
 */
-inline __global__ void reduce_kernel_d(const int* g_idata, int* g_odata, unsigned int n) {
+inline __device__ void reduce_kernel_d(const int* g_idata, int* g_odata, unsigned int n) {
     extern __shared__ int sdata[];
 
     unsigned int tid = threadIdx.x;
@@ -274,7 +274,7 @@ inline __global__ void reduce_kernel_d(const int* g_idata, int* g_odata, unsigne
      
  for (unsigned int n = N; n > 1; n = (n + blockDim.x - 1) / blockDim.x) {
     reduce_kernel_d<<<(N + blockDim.x - 1) / blockDim.x, blockDim.x,
-    blockDim.x * sizeof(int)>>>(a, b, N);
+    blockDim.x * sizeof(int)>>>(g_idata, g_odata, N);
     kernelAtomicTreeBarrierUniqSRB<<<(N + blockDim.x - 1) / blockDim.x, blockDim.x>>>(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
     // Swap input and output arrays
     int* tmp = g_idata;
