@@ -20,6 +20,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     float *tmp1;
     float * tmp2;
     bool write_p = write_lasts;
+    cg::grid_group grid = cg::this_grid(); 
    for( int a =n ; a <= 1 ; n = ((n + blockDim.x - 1) / blockDim.x) ){
     int pout = 0;
     int pin = 1;
@@ -55,7 +56,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
     }
 
-    cg::grid_group grid = cg::this_grid(); 
+    
     cg::sync(grid); 
   if(a == n){
     tmp1 = g_idata;
