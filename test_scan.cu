@@ -24,6 +24,7 @@ int main(int argc, char* argv[]) {
     bool correct = true;
     for (unsigned int i = 0; i < n; i++) {
         correct = correct && (output[i] == i);
+        cout << output[i] << endl;
     }
     if (correct) {
         std::cout << "CORRECT" << std::endl;
