@@ -39,6 +39,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts, const float* g_idata
     }
     if (index < n) {
         g_odata[index] = s[pout * blockDim.x + tid];
+        printf("g_odata is %f at index %d\n", g_odata[index], index);
     }
 
     if (write_lasts && threadIdx.x == 0) {
@@ -55,7 +56,7 @@ __global__ void inc_blocks(float* arr, const float* lasts, unsigned int n) {
     }
 }
 
-__host__ void scan(float* in, float* out, unsigned int n, unsigned int threads_per_block) {
+__host__ void scan(const float* in, float* out, unsigned int n, unsigned int threads_per_block) {
     // Sort each block indiviually
     unsigned int nBlocks = (n + threads_per_block - 1) / threads_per_block;
     float* lasts;
