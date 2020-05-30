@@ -39,7 +39,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         }
         __syncthreads();
     }
-    if (index < n && n <= blockDim.x) {
+    if (index < n) {
         g_odata[index] = s[pout * blockDim.x + tid];
     }
 
