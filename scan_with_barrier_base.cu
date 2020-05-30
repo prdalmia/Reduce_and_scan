@@ -67,7 +67,7 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     hillis_steele<<<((a + threads_per_block - 1) / threads_per_block), threads_per_block, shmem>>>(out, lasts, in, a, true);
     // Swap input and output arrays
     float* tmp = in;
-    a = lasts;
+    in = lasts;
     lasts = tmp;
    }
     // Scan lasts
