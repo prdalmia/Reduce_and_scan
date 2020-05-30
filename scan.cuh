@@ -10,6 +10,6 @@
 //
 // Assumptions:
 // - n <= threads_per_block * threads_per_block
-__host__ void scan(const float* in, float* out, unsigned int n, unsigned int threads_per_block);
+__host__ void scan(float* in, float* out, unsigned int n, unsigned int threads_per_block);
 
 #endif
