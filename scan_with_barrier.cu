@@ -327,9 +327,6 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     bool * global_sense;
     bool* perSMsense;
     bool * done;
-    cudaMallocManaged(&a, N * sizeof(int));
-    cudaMallocManaged(&b, N * sizeof(int));
-    cudaMallocManaged(&output, sizeof(int));
     int NUM_SM = 80;
     cudaMallocManaged((void **)&global_sense,sizeof(bool));
     cudaMallocManaged((void **)&done,sizeof(bool));
@@ -348,7 +345,7 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
        cudaMemset(&last_block[i], 0, sizeof(unsigned int));
      }
     //cudaLaunchCooperativeKernel((void*)hillis_steele, nBlocks, threads_per_block,  kernelArgs, shmem, 0);
-    hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
+    hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, write_lasts, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
     // Swap input and output arrays
  //   float* tmp = in;
  //   in = lasts;
