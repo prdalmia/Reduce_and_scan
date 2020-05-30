@@ -47,6 +47,7 @@ namespace cg = cooperative_groups;
     int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
+    printf("Sum is %d", g_idata[0]);
  }
 
 
