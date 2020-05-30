@@ -275,7 +275,7 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
 }
 
 
-__host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_block, ) {
+__host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_block ) {
     // Workspace NOTE: Could be smaller
     int* a;
     int* b;
