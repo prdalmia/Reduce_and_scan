@@ -40,14 +40,7 @@ namespace cg = cooperative_groups;
 
  __global__ void reduce_kernel(int* g_idata, 
                               int* g_odata, 
-                              unsigned int N, 
-                              bool * global_sense,
-                              bool * perSMsense,
-                              bool * done,
-                              unsigned int* global_count,
-                              unsigned int* local_count,
-                              unsigned int* last_block,
-                              const int NUM_SM) {
+                              unsigned int N) {
      
  for (unsigned int n = N; n > 1; n = (n + blockDim.x - 1) / blockDim.x) {
     reduce_kernel_d<<<(n + blockDim.x - 1) / blockDim.x, blockDim.x,
@@ -73,7 +66,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
 
     //for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
         reduce_kernel<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
-                        threads_per_block * sizeof(int)>>>(a, b, N, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
+                        threads_per_block * sizeof(int)>>>(a, b, N);
 
         // Swap input and output arrays
         //int* tmp = a;
