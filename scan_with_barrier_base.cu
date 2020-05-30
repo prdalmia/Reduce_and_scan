@@ -4,7 +4,8 @@
 #include <iostream>
 
 #include "scan.cuh"
-
+#include <cooperative_groups.h>
+namespace cg = cooperative_groups;
 // Scans each block of g_idata separately and writes the result to g_odata.
 // g_idata and g_odata are arrays available on device of length n
 // Writes the sum of each block to lasts[blockIdx.x]
@@ -13,6 +14,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
 
     int tid = threadIdx.x;
     unsigned int index = blockDim.x * blockIdx.x + tid;
+    for (unsigned int a = n; a > 1; a = (a + threads_per_block - 1) / threads_per_block) {
     int pout = 0;
     int pin = 1;
 
@@ -46,6 +48,12 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
     }
 }
+      cg::grid_group grid = cg::this_grid(); 
+      cg::sync(grid);
+      float* tmp = in;
+      in = lasts;
+      lasts = tmp;
+}
 
 // Increment each element corresponding to block b_i of arr by lasts[b_i]
 __global__ void inc_blocks(float* arr, float* lasts, unsigned int n) {
@@ -63,14 +71,14 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     unsigned int shmem = 2 * threads_per_block * sizeof(float);
    // hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
     //cudaDeviceSynchronize();
-   for (unsigned int a = n; a > 1; a = (a + threads_per_block - 1) / threads_per_block) {
-    hillis_steele<<<((a + threads_per_block - 1) / threads_per_block), threads_per_block, shmem>>>(out, lasts, in, a, true);
+   //for (unsigned int a = n; a > 1; a = (a + threads_per_block - 1) / threads_per_block) {
+    hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
     // Swap input and output arrays
-    float* tmp = in;
-    in = lasts;
-    lasts = tmp;
-    std::cout << in[a-1] << std::endl;
-   }
+ //   float* tmp = in;
+ //   in = lasts;
+ //   lasts = tmp;
+ //   std::cout << in[a-1] << std::endl;
+ //  }
     // Scan lasts
     //hillis_steele<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false);
     cudaDeviceSynchronize();
