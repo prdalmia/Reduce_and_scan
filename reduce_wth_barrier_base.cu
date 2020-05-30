@@ -6,7 +6,7 @@
 #include <cooperative_groups.h>
 namespace cg = cooperative_groups;
 
- __global__ void reduce_kernel_d(int* g_idata, int* g_odata, unsigned int N) {
+ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N) {
     extern __shared__ int sdata[];
   
     unsigned int tid = threadIdx.x;
