@@ -39,9 +39,7 @@ namespace cg = cooperative_groups;
     g_odata = tmp;
 }
 
-if(tid ==0 and blockIdx.x ==0){
-    *output = g_idata[0];
-} 
+*output = g_idata[0];
  
 }
 
@@ -73,10 +71,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
     std::cout << "time cuda only(ms) " << ms << std::endl;
-
-    int sum1 = *output;
-    printf("sum1 is %d", *output);
-    int sum = a[0];
+    int sum = *output;
 
     cudaFree(a);
     cudaFree(b);
