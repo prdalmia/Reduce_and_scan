@@ -69,7 +69,7 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     float* tmp = in;
     in = lasts;
     lasts = tmp;
-    std::cout << in[n-1] << std::endl;
+    std::cout << in[a-1] << std::endl;
    }
     // Scan lasts
     //hillis_steele<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false);
