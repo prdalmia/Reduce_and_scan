@@ -31,7 +31,7 @@ namespace cg = cooperative_groups;
     // Write out reduced portion of the output
     if (tid == 0) {
         g_odata[blockIdx.x] = sdata[0];
-        printf("Sum for blockIdx.x is %d and %d", blockIdx.x, sdata[0]);
+        printf("Sum for blockIdx.x is %d and %d\n", blockIdx.x, sdata[0]);
     }
 
     cg::grid_group grid = cg::this_grid(); 
