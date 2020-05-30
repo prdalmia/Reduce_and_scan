@@ -82,7 +82,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
     std::cout << "time cuda only(ms) " << ms << std::endl;
-    int sum = *output;
+    int sum = a[0];
 
     cudaFree(a);
     cudaFree(b);
