@@ -23,7 +23,6 @@ int main(int argc, char* argv[]) {
 
     bool correct = true;
         std::cout << output[9] << std::endl;
-    }
     if (correct) {
         std::cout << "CORRECT" << std::endl;
     } else {
