@@ -32,15 +32,16 @@ namespace cg = cooperative_groups;
     if (tid == 0) {
         g_odata[blockIdx.x] = sdata[0];
     }
-    __syncthreads();
     cg::grid_group grid = cg::this_grid(); 
     cg::sync(grid);
-    *output = g_odata[0];
     int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
 }
 
+if(tid ==0 and blockIdx.x ==0){
+    *output = g_idata[0];
+} 
  
 }
 
@@ -73,7 +74,8 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaEventElapsedTime(&ms, start, stop);
     std::cout << "time cuda only(ms) " << ms << std::endl;
 
-
+    int sum1 = *output;
+    printf("sum1 is %d", *output);
     int sum = a[0];
 
     cudaFree(a);
