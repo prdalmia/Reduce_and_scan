@@ -160,7 +160,10 @@ cudaBarrierAtomicLocalSRB(&local_count[smID], &last_block[smID], smID, numTBs_pe
 // only 1 TB per SM needs to do the global barrier since we synchronized
 // the TBs locally first
 if (blockIdx.x == last_block[smID]) {
-    printf("I am here for sm %d\n", smID);
+    if(isMasterThread && perSM_blockID == 0){    
+printf("I am here for sm %d\n", smID);
+    }
+    __syncthreads();
 cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread , &perSMsense[smID], global_sense);  
 *done = 1;
 }
