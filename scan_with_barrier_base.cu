@@ -15,8 +15,7 @@ __global__ void hillis_steele_d(float* g_odata, float* lasts,  float* g_idata, u
     hillis_steele_d<<<nBlocks, threads_per_block, shmem>>>(g_odata, lasts, g_idata, n, true);
     cg::grid_group grid = cg::this_grid(); 
     cg::sync(grid);  
-    hillis_steele_d<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false);
-    cg::grid_group grid = cg::this_grid(); 
+    hillis_steele_d<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false); 
     cg::sync(grid);
     inc_blocks<<<nBlocks, threads_per_block>>>(g_odata, lasts, n);
 }
