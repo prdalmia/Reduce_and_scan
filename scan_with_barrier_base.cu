@@ -37,7 +37,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts, const float* g_idata
         }
         __syncthreads();
     }
-    if (index < n && n <= threads_per_block) {
+    if (index < n && n <= blockDim.x) {
         g_odata[index] = s[pout * blockDim.x + tid];
     }
 
@@ -55,7 +55,7 @@ __global__ void inc_blocks(float* arr, const float* lasts, unsigned int n) {
     }
 }
 
-__host__ void scan(const float* in, float* out, unsigned int n, unsigned int threads_per_block) {
+__host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_per_block) {
     // Sort each block indiviually
     unsigned int nBlocks = (n + threads_per_block - 1) / threads_per_block;
     float* lasts;
@@ -64,7 +64,7 @@ __host__ void scan(const float* in, float* out, unsigned int n, unsigned int thr
    // hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
     //cudaDeviceSynchronize();
    for (unsigned int a = n; a > 1; a = (a + threads_per_block - 1) / threads_per_block) {
-    hillis_steele<<<(a + threads_per_block - 1) / threads_per_block), threads_per_block, shmem>>>(out, lasts, in, a, true);
+    hillis_steele<<<((a + threads_per_block - 1) / threads_per_block), threads_per_block, shmem>>>(out, lasts, in, a, true);
     // Swap input and output arrays
     float* tmp = in;
     a = lasts;
