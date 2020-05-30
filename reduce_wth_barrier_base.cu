@@ -31,7 +31,7 @@ namespace cg = cooperative_groups;
     // Write out reduced portion of the output
     if (tid == 0) {
         g_odata[blockIdx.x] = sdata[0];
-        if(blockIdx == 0)
+        if(blockIdx.x == 0)
         printf("The output of the block is %d", sdata[0]);
     }
     
