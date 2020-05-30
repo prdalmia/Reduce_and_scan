@@ -14,7 +14,6 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
 
     int tid = threadIdx.x;
     unsigned int index = blockDim.x * blockIdx.x + tid;
-    for (unsigned int a = n; a > 1; a = (a + blockDim.x - 1) / blockDim.x) {
     int pout = 0;
     int pin = 1;
 
@@ -48,14 +47,6 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
         printf("Lasts is %d\n", lasts[blockIdx.x]);
     }
-/*
-      cg::grid_group grid = cg::this_grid(); 
-      cg::sync(grid);
-      float* tmp = g_idata;
-      g_idata = lasts;
-      lasts = tmp;
-*/
-    }
 }
 
 // Increment each element corresponding to block b_i of arr by lasts[b_i]
@@ -80,7 +71,7 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
      //   (void *)&out,  (void *)&lasts, (void *)&in, (void *)&n, (void *)&write_lasts 
     //};
     //cudaLaunchCooperativeKernel((void*)hillis_steele, nBlocks, threads_per_block,  kernelArgs, shmem, 0);
-    hillis_steele<<<(a + threads_per_block - 1) / threads_per_block), threads_per_block, shmem>>>(out, lasts, in, a, true);
+    hillis_steele<<<((a + threads_per_block - 1) / threads_per_block), threads_per_block, shmem>>>(out, lasts, in, a, true);
      Swap input and output arrays
    float* tmp = in;
     in = lasts;
