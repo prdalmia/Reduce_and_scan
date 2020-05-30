@@ -40,12 +40,13 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     }
     if (index < n  ) {
         g_odata[index] = s[pout * blockDim.x + tid];
+        printf("g_odata is %f", g_odata[index]);
     }
 
     if (write_lasts && threadIdx.x == 0) {
         unsigned int block_end = blockIdx.x * blockDim.x + blockDim.x - 1;
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
-        printf("Lasts is %f for a %d and block ID is %d and output data is %f\n", lasts[blockIdx.x], gridDim.x, blockIdx.x, g_odata[index]);
+       // printf("Lasts is %f for a %d and block ID is %d and output data is %f\n", lasts[blockIdx.x], gridDim.x, blockIdx.x, g_odata[index]);
     }
 }
 
@@ -53,9 +54,9 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
 __global__ void inc_blocks(float* arr, float* lasts, unsigned int n) {
     unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
     if (index < n) {
-        printf("arr_before is %f\n", arr[index]);
+        //printf("arr_before is %f\n", arr[index]);
         arr[index] = arr[index] + lasts[blockIdx.x];
-        printf("arr_adter is %f\n", arr[index]);
+        //printf("arr_adter is %f\n", arr[index]);
     }
 }
 
