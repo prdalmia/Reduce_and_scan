@@ -179,7 +179,6 @@ __syncthreads();
     }
 cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense[smID], global_sense);
 }
-*done = 0;
 }
 
 
@@ -269,6 +268,7 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
     }
     //hi this is preyesh
  kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);     
+    *done = 0;
     int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
