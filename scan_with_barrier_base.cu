@@ -50,8 +50,8 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
 }
       cg::grid_group grid = cg::this_grid(); 
       cg::sync(grid);
-      float* tmp = in;
-      in = lasts;
+      float* tmp = g_idata;
+      g_idata = lasts;
       lasts = tmp;
 }
 
