@@ -22,7 +22,6 @@ __threadfence();
 // atomicInc effectively adds 1 to atomic for each TB that's part of the
 // global barrier.
 atomicInc(globalBarr, 0x7FFFFFFF);
-printf("Global barr is %d\n", *globalBarr);
 }
 __syncthreads();
 
@@ -41,7 +40,6 @@ proceed because all of the TBs have reached the global barrier.
 if (atomicCAS(globalBarr, numBarr, 0) == numBarr) {
 // atomicCAS acts as a load acquire, need TF to enforce ordering
 __threadfence();
-printf("Global Barr complete\n");
 *global_sense = *sense;
 //  printf("Setting global sense = sense \n");
 }
@@ -161,7 +159,6 @@ cudaBarrierAtomicLocalSRB(&local_count[smID], &last_block[smID], smID, numTBs_pe
 // the TBs locally first
 if (blockIdx.x == last_block[smID]) {
     if(isMasterThread && perSM_blockID == 0){    
-printf("I am here for sm %d\n", smID);
     }
     __syncthreads();
 cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread , &perSMsense[smID], global_sense);  
