@@ -9,11 +9,12 @@ namespace cg = cooperative_groups;
 // Scans each block of g_idata separately and writes the result to g_odata.
 // g_idata and g_odata are arrays available on device of length n
 // Writes the sum of each block to lasts[blockIdx.x]
-__global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts) {
-    hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
+__global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts, int threads_per_block ) {
+    unsigned int shmem = 2 * threads_per_block * sizeof(float);
+    hillis_steele_d<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
     cg::grid_group grid = cg::this_grid(); 
     cg::sync(grid);  
-    hillis_steele<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false);
+    hillis_steele_d<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false);
     cg::grid_group grid = cg::this_grid(); 
     cg::sync(grid);
     inc_blocks<<<nBlocks, threads_per_block>>>(out, lasts, n);
@@ -72,15 +73,14 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     unsigned int nBlocks = (n + threads_per_block - 1) / threads_per_block;
     float* lasts;
     cudaMallocManaged(&lasts, nBlocks * sizeof(float));
-    unsigned int shmem = 2 * threads_per_block * sizeof(float);
     bool write_lasts = true;
    // hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
     //cudaDeviceSynchronize();
    //for (unsigned int a = n; a > 1; a = (a + threads_per_block - 1) / threads_per_block) {
     void *kernelArgs[] = {
-        (void *)&out,  (void *)&lasts, (void *)&in, (void *)&n, (void *)&write_lasts 
+        (void *)&out,  (void *)&lasts, (void *)&in, (void *)&n, (void *)&write_lasts, (void *)&threads_per_block 
     };
-    cudaLaunchCooperativeKernel((void*)hillis_steele, nBlocks, threads_per_block,  kernelArgs, shmem, 0);
+    cudaLaunchCooperativeKernel((void*)hillis_steele, nBlocks, threads_per_block,  kernelArgs, 0, 0);
     //hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
     // Swap input and output arrays
  //   float* tmp = in;
