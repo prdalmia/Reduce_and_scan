@@ -31,7 +31,7 @@ namespace cg = cooperative_groups;
     // Write out reduced portion of the output
     if (tid == 0) {
         g_odata[blockIdx.x] = sdata[0];
-        printf("Sum is %d\n", g_odata[0]);
+        printf("Sum for blockIdx.x is %d and %d\n", g_odata[0]);
     }
 
     cg::grid_group grid = cg::this_grid(); 
@@ -52,11 +52,15 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaMallocManaged(&b, N * sizeof(int));
     cudaMemcpy(a, arr, N * sizeof(int), cudaMemcpyHostToDevice);
 
-    
+    //for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
         reduce_kernel<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
                         threads_per_block * sizeof(int)>>>(a, b, N);
 
-      
+        // Swap input and output arrays
+        //int* tmp = a;
+        //a = b;
+        //b = tmp;
+   // }
     cudaDeviceSynchronize();
 
     int sum = a[0];
