@@ -29,7 +29,7 @@ while (*global_sense != *sense)
 {
 if (isMasterThread)
 {
- printf("Global sense hili\n");
+ //printf("Global sense hili\n");
 /*
 For the tree barrier we expect only 1 TB from each SM to enter the
 global barrier.  Since we are assuming an equal amount of work for all
@@ -166,7 +166,7 @@ cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread , &perSMsense
 }
 else {
 if(isMasterThread){
-while (*global_sense != perSMsense[smID] && *done != 1 ){  
+while ( *done != 1 && *global_sense != perSMsense[smID] ){  
 __threadfence();
 }
 }
