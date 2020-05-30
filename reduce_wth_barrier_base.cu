@@ -31,6 +31,9 @@ namespace cg = cooperative_groups;
     if (tid == 0) {
         g_odata[blockIdx.x] = sdata[0];
     }
+
+    cg::grid_group grid = cg::this_grid(); 
+    cg::sync(grid);
 }
 
  __global__ void reduce_kernel(int* g_idata, 
@@ -41,8 +44,7 @@ namespace cg = cooperative_groups;
     reduce_kernel_d<<<(n + blockDim.x - 1) / blockDim.x, blockDim.x,
     blockDim.x * sizeof(int)>>>(g_idata, g_odata, n);
     
-    cg::grid_group grid = cg::this_grid(); 
-    cg::sync(grid);
+    
     // Swap input and output arrays
     int* tmp = g_idata;
     g_idata = g_odata;
