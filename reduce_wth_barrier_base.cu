@@ -56,7 +56,8 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     // Workspace NOTE: Could be smaller
     int* a;
     int* b;
-    
+    cudaMallocManaged(&a, N * sizeof(int));
+    cudaMallocManaged(&b, N * sizeof(int));
     cudaMemcpy(a, arr, N * sizeof(int), cudaMemcpyHostToDevice);
 
     //for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
