@@ -6,11 +6,12 @@
 #include <cooperative_groups.h>
 namespace cg = cooperative_groups;
 
- __global__ void reduce_kernel_d(const int* g_idata, int* g_odata, unsigned int n) {
+ __global__ void reduce_kernel_d(int* g_idata, int* g_odata, unsigned int N) {
     extern __shared__ int sdata[];
-
+  
     unsigned int tid = threadIdx.x;
     unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+    for (unsigned int n = N; n > 1; n = (n + blockDim.x - 1) / blockDim.x){
     if (i < n) {
         sdata[tid] = g_idata[i];
     } else {
@@ -34,26 +35,11 @@ namespace cg = cooperative_groups;
 
     cg::grid_group grid = cg::this_grid(); 
     cg::sync(grid);
-}
 
- __global__ void reduce_kernel(int* g_idata, 
-                              int* g_odata, 
-                              unsigned int N) {
-     
- for (unsigned int n = N; n > 1; n = (n + blockDim.x - 1) / blockDim.x) {
-    reduce_kernel_d<<<(n + blockDim.x - 1) / blockDim.x, blockDim.x,
-    blockDim.x * sizeof(int)>>>(g_idata, g_odata, n);
-    
-    
-    // Swap input and output arrays
     int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
-    if(threadIdx.x + blockDim.x*blockIdx.x == 0){
-    printf("Sum is %d\n", g_idata[0]);
-    }
- }
-
+}
 
 }
 
