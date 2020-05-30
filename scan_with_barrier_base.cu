@@ -30,7 +30,6 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     if (index >= a) {
         s[tid] = 0.f;
     } else if (tid == 0) {
-        printf("i am here");
         s[tid] = 0.f;
     } else {
         s[tid] = g_idata[index - 1];
