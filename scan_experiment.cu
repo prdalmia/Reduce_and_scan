@@ -38,15 +38,14 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         }
         __syncthreads();
     }
-    if (index < n) {
+    if (index < n && n <= blockDim.x ) {
         g_odata[index] = s[pout * blockDim.x + tid];
     }
 
     if (write_lasts && threadIdx.x == 0) {
         unsigned int block_end = blockIdx.x * blockDim.x + blockDim.x - 1;
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
-        if(blockIdx.x == gridDim.x-1)
-        printf("Lasts is %f\n", lasts[gridDim.x-1]);
+        printf("Lasts is %f for a %d\n", lasts[blockIdx.x], a);
     }
 }
 
@@ -85,8 +84,7 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     cudaDeviceSynchronize();
 
     // Add starting value to each block
-    inc_blocks<<<nBlocks, threads_per_block>>>(out, lasts, n);
+    inc_blocks<<<nBlocks, threads_per_block>>>(out, in, n);
     cudaDeviceSynchronize();
-
     cudaFree(lasts);
 }
