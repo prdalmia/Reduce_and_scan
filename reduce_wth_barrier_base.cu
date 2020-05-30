@@ -6,7 +6,7 @@
 #include <cooperative_groups.h>
 namespace cg = cooperative_groups;
 
- __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N) {
+ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output) {
     extern __shared__ int sdata[];
   
     unsigned int tid = threadIdx.x;
@@ -36,25 +36,28 @@ namespace cg = cooperative_groups;
 
     cg::grid_group grid = cg::this_grid(); 
     cg::sync(grid);
-
+    
     int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
 }
-
+*output = g_idata[0];
+ 
 }
 
 __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_block) {
     // Workspace NOTE: Could be smaller
     int* a;
     int* b;
+    int* output;
     cudaMallocManaged(&a, N * sizeof(int));
     cudaMallocManaged(&b, N * sizeof(int));
+    cudaMallocManaged(&output, sizeof(int));
     cudaMemcpy(a, arr, N * sizeof(int), cudaMemcpyHostToDevice);
 
     //for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
         reduce_kernel<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
-                        threads_per_block * sizeof(int)>>>(a, b, N);
+                        threads_per_block * sizeof(int)>>>(a, b, N, output);
 
         // Swap input and output arrays
         //int* tmp = a;
@@ -63,7 +66,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
    // }
     cudaDeviceSynchronize();
 
-    int sum = a[0];
+    int sum = *output;
 
     cudaFree(a);
     cudaFree(b);
