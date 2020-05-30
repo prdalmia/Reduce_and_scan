@@ -35,12 +35,12 @@ namespace cg = cooperative_groups;
 
     cg::grid_group grid = cg::this_grid(); 
     cg::sync(grid);
-    
+    *output = g_odata[0];
     int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
 }
-*output = g_idata[0];
+
  
 }
 
