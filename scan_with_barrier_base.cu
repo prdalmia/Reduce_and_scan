@@ -16,10 +16,15 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
 
     int tid = threadIdx.x;
     unsigned int index = blockDim.x * blockIdx.x + tid;
+    
+    float *tmp1;
+    float * tmp2;
+    bool write_p = write_lasts;
+   for( int a =n ; a <= 1 ; n = ((n + blockDim.x - 1) / blockDim.x) ){
     int pout = 0;
     int pin = 1;
 
-    if (index >= n) {
+    if (index >= a) {
         s[tid] = 0.f;
     } else if (tid == 0) {
         s[tid] = 0.f;
@@ -40,15 +45,34 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         }
         __syncthreads();
     }
-    if (index < n ) {
+    if (index < a ) {
         g_odata[index] = s[pout * blockDim.x + tid];
         printf("g_odata is %f at index %d\n", g_odata[index], index);
     }
 
-    if (write_lasts && threadIdx.x == 0) {
+    if (write_p && threadIdx.x == 0) {
         unsigned int block_end = blockIdx.x * blockDim.x + blockDim.x - 1;
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
     }
+
+    cg::grid_group grid = cg::this_grid(); 
+    cg::sync(grid); 
+  if(a == n){
+    tmp1 = g_idata;
+    tmp2 = g_odata;
+    g_idata = lasts;
+    g_odata = lasts;
+    write_p = false;
+  }
+}
+    cg::sync(grid);
+    g_odata = tmp2;
+    if (index < n) {
+        g_odata[index] = g_odata[index] + lasts[blockIdx.x];
+    }
+
+
+
 
 }
 
@@ -60,16 +84,6 @@ __global__ void inc_blocks(float* arr, float* lasts, unsigned int n) {
     }
 }
 
-__global__ void hillis_steele_d(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts, int threads_per_block ) {
-    unsigned int nBlocks = (n + threads_per_block - 1) / threads_per_block;
-    unsigned int shmem = 2 * threads_per_block * sizeof(float);
-    hillis_steele<<<nBlocks, threads_per_block, shmem>>>(g_odata, lasts, g_idata, n, true);
-    cg::grid_group grid = cg::this_grid(); 
-    cg::sync(grid);  
-    hillis_steele<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false); 
-    cg::sync(grid);
-    inc_blocks<<<nBlocks, threads_per_block>>>(g_odata, lasts, n);
-}
 
 __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_per_block) {
     // Sort each block indiviually
@@ -77,13 +91,14 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     float* lasts;
     cudaMallocManaged(&lasts, nBlocks * sizeof(float));
     bool write_lasts = true;
+    unsigned int shmem = 2 * threads_per_block * sizeof(float);
    // hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
     //cudaDeviceSynchronize();
    //for (unsigned int a = n; a > 1; a = (a + threads_per_block - 1) / threads_per_block) {
     void *kernelArgs[] = {
-        (void *)&out,  (void *)&lasts, (void *)&in, (void *)&n, (void *)&write_lasts, (void *)&threads_per_block,  
+        (void *)&out,  (void *)&lasts, (void *)&in, (void *)&n, (void *)&write_lasts  
     };
-    cudaLaunchCooperativeKernel((void*)hillis_steele_d, nBlocks, threads_per_block,  kernelArgs, 0, 0);
+    cudaLaunchCooperativeKernel((void*)hillis_steele, nBlocks, threads_per_block,  kernelArgs, shmem, 0);
     //hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
     // Swap input and output arrays
  //   float* tmp = in;
