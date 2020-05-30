@@ -46,7 +46,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         unsigned int block_end = blockIdx.x * blockDim.x + blockDim.x - 1;
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
         if(blockIdx.x == blockDim.x-1)
-        printf("Lasts is %f\n", lasts[blockDim.x-1]);
+        printf("Lasts is %f\n", lasts[gridDim.x-1]);
     }
 }
 
