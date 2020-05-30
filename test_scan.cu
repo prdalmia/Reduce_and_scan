@@ -8,7 +8,7 @@
 
 int main(int argc, char* argv[]) {
     unsigned int n = std::atoi(argv[1]);
-    unsigned int threads_per_block = 2048;
+    unsigned int threads_per_block = 1024;
 
     float* arr;
     cudaMallocManaged(&arr, n * sizeof(float));
