@@ -47,7 +47,9 @@ namespace cg = cooperative_groups;
     int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
-    printf("Sum is %d", g_idata[0]);
+    if(threadIdx.x + blockDim.x*blockIdx.x == 0){
+    printf("Sum is %d\n", g_idata[0]);
+    }
  }
 
 
