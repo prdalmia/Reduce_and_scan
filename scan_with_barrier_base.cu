@@ -2,6 +2,7 @@
 
 #include <cuda.h>
 #include <iostream>
+#include <stdio.h>
 
 #include "scan.cuh"
 #include <cooperative_groups.h>
