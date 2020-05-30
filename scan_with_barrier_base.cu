@@ -21,7 +21,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     float * tmp2;
     bool write_p = write_lasts;
     cg::grid_group grid = cg::this_grid(); 
-   for( int a =n ; a <= 1 ; n = ((n + blockDim.x - 1) / blockDim.x) ){
+   for( int a =n ; a <= 1 ; a = ((a + blockDim.x - 1) / blockDim.x) ){
     int pout = 0;
     int pin = 1;
 
@@ -71,10 +71,6 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     if (index < n) {
         g_odata[index] = g_odata[index] + lasts[blockIdx.x];
     }
-
-
-
-
 }
 
 // Increment each element corresponding to block b_i of arr by lasts[b_i]
