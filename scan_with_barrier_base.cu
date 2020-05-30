@@ -12,13 +12,13 @@ namespace cg = cooperative_groups;
 __global__ void hillis_steele_d(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts, int threads_per_block ) {
     unsigned int nBlocks = (n + threads_per_block - 1) / threads_per_block;
     unsigned int shmem = 2 * threads_per_block * sizeof(float);
-    hillis_steele_d<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
+    hillis_steele_d<<<nBlocks, threads_per_block, shmem>>>(g_odata, lasts, g_idata, n, true);
     cg::grid_group grid = cg::this_grid(); 
     cg::sync(grid);  
     hillis_steele_d<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false);
     cg::grid_group grid = cg::this_grid(); 
     cg::sync(grid);
-    inc_blocks<<<nBlocks, threads_per_block>>>(out, lasts, n);
+    inc_blocks<<<nBlocks, threads_per_block>>>(g_odata, lasts, n);
 }
 
 __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts) {
