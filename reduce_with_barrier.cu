@@ -212,7 +212,6 @@ joinBarrier_helperSRB(global_sense, perSMsense, done, global_count, local_count,
 numBlocksAtBarr, smID, perSM_blockID, numTBs_perSM,
 isMasterThread);
 
-__syncthreads();
 }
 
 /*
@@ -234,16 +233,12 @@ __device__ void __gpu_sync(int blocks_to_synch)
     __syncthreads();
 }
 */
- __global__ void reduce_kernel_d(const int* g_idata, int* g_odata, unsigned int n,  bool * global_sense, bool * perSMsense,
-    bool * done,
-    unsigned int* global_count,
-    unsigned int* local_count,
-    unsigned int* last_block,
-    const int NUM_SM) {
+__global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output) {
     extern __shared__ int sdata[];
-
+  
     unsigned int tid = threadIdx.x;
     unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+    for (unsigned int n = N; n > 1; n = (n + blockDim.x - 1) / blockDim.x){
     if (i < n) {
         sdata[tid] = g_idata[i];
     } else {
@@ -264,41 +259,22 @@ __device__ void __gpu_sync(int blocks_to_synch)
     if (tid == 0) {
         g_odata[blockIdx.x] = sdata[0];
     }
-    kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
-}
 
- __global__ void reduce_kernel(int* g_idata, 
-                              int* g_odata, 
-                              unsigned int N, 
-                              bool * global_sense,
-                              bool * perSMsense,
-                              bool * done,
-                              unsigned int* global_count,
-                              unsigned int* local_count,
-                              unsigned int* last_block,
-                              const int NUM_SM) {
-     
- for (unsigned int n = N; n > 1; n = (n + blockDim.x - 1) / blockDim.x) {
-    reduce_kernel_d<<<(n + blockDim.x - 1) / blockDim.x, blockDim.x,
-    blockDim.x * sizeof(int)>>>(g_idata, g_odata, n, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
+    kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM); 
     
-    // Swap input and output arrays
-    if((threadIdx.x + blockDim.x*blockIdx.x) == 0)
-{
-    printf(" barrier with grid dim %d\n", ((n + blockDim.x - 1)/blockDim.x));
-}
     int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
- }
-
-
 }
+ *output = g_idata[0];
+}
+
 
 __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_block) {
     // Workspace NOTE: Could be smaller
     int* a;
     int* b;
+    int * output;
     unsigned int* global_count;
     unsigned int* local_count; 
     unsigned int *last_block;
@@ -307,6 +283,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     bool * done;
     cudaMallocManaged(&a, N * sizeof(int));
     cudaMallocManaged(&b, N * sizeof(int));
+    cudaMallocManaged(&output, sizeof(int));
     int NUM_SM = 80;
     cudaMallocManaged((void **)&global_sense,sizeof(bool));
     cudaMallocManaged((void **)&done,sizeof(bool));
@@ -314,6 +291,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaMallocManaged((void **)&last_block,sizeof(unsigned int)*(NUM_SM));
     cudaMallocManaged((void **)&local_count,  NUM_SM*sizeof(unsigned int));
     cudaMallocManaged((void **)&global_count,sizeof(unsigned int));
+    
     cudaMemset(global_sense, false, sizeof(bool));
     cudaMemset(done, false, sizeof(bool));
     cudaMemset(global_count, 0, sizeof(unsigned int));
