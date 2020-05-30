@@ -38,7 +38,7 @@ namespace cg = cooperative_groups;
     cg::grid_group grid = cg::this_grid(); 
     grid.sync();
 
-    __threadfence();
+    //__threadfence();
     
     int* tmp = g_idata;
     g_idata = g_odata;
@@ -70,13 +70,6 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
         (void *)&a,  (void *)&b, (void *)&N, (void *)&output 
     };
       cudaLaunchCooperativeKernel((void*)reduce_kernel, ((N + threads_per_block - 1) / threads_per_block), threads_per_block,  kernelArgs, threads_per_block * sizeof(int), 0);
-    //for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
-
-        // Swap input and output arrays
-        //int* tmp = a;
-        //a = b;
-        //b = tmp;
-   // }
     cudaEventRecord(stop);
     cudaDeviceSynchronize();
     float ms;

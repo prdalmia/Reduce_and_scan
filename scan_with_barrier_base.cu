@@ -69,10 +69,15 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     float* lasts;
     cudaMallocManaged(&lasts, nBlocks * sizeof(float));
     unsigned int shmem = 2 * threads_per_block * sizeof(float);
+    bool write_lasts = true;
    // hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
     //cudaDeviceSynchronize();
    //for (unsigned int a = n; a > 1; a = (a + threads_per_block - 1) / threads_per_block) {
-    hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
+    void *kernelArgs[] = {
+        (void *)&out,  (void *)&lasts, (void *)&in, (void *)&n, (void *)&write_lasts 
+    };
+      cudaLaunchCooperativeKernel((void*)hillis_steele, nBlocks, threads_per_block,  kernelArgs, shmem, 0);
+    //hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
     // Swap input and output arrays
  //   float* tmp = in;
  //   in = lasts;
