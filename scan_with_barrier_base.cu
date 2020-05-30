@@ -86,7 +86,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     __syncthreads();
     if (index < n) {
         g_odata[index] = g_odata[index] + lasts[blockIdx.x];
-        printf("g_odata is %f at index %d\n", g_odata[index], index);
+      //  printf("g_odata is %f at index %d\n", g_odata[index], index);
     }
 }
 
