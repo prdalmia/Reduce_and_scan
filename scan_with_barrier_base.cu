@@ -10,11 +10,20 @@ namespace cg = cooperative_groups;
 // g_idata and g_odata are arrays available on device of length n
 // Writes the sum of each block to lasts[blockIdx.x]
 __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts) {
+    hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
+    cg::grid_group grid = cg::this_grid(); 
+    cg::sync(grid);  
+    hillis_steele<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false);
+    cg::grid_group grid = cg::this_grid(); 
+    cg::sync(grid);
+    inc_blocks<<<nBlocks, threads_per_block>>>(out, lasts, n);
+}
+
+__global__ void hillis_steele_d(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts) {
     extern volatile __shared__ float s[];
 
     int tid = threadIdx.x;
     unsigned int index = blockDim.x * blockIdx.x + tid;
-    for (unsigned int a = n; a > 1; a = (a + blockDim.x - 1) / blockDim.x) {
     int pout = 0;
     int pin = 1;
 
@@ -39,22 +48,15 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         }
         __syncthreads();
     }
-    if (index < n && n <= blockDim.x) {
+    if (index < n ) {
         g_odata[index] = s[pout * blockDim.x + tid];
     }
 
     if (write_lasts && threadIdx.x == 0) {
         unsigned int block_end = blockIdx.x * blockDim.x + blockDim.x - 1;
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
-        printf("Lasts is %d\n", lasts[blockIdx.x]);
     }
 
-      cg::grid_group grid = cg::this_grid(); 
-      cg::sync(grid);
-      float* tmp = g_idata;
-      g_idata = lasts;
-      lasts = tmp;
-}
 }
 
 // Increment each element corresponding to block b_i of arr by lasts[b_i]
@@ -88,10 +90,6 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
  //  }
     // Scan lasts
     //hillis_steele<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false);
-    cudaDeviceSynchronize();
-
-    // Add starting value to each block
-    inc_blocks<<<nBlocks, threads_per_block>>>(out, lasts, n);
     cudaDeviceSynchronize();
 
     cudaFree(lasts);
