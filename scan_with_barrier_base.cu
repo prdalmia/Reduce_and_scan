@@ -8,7 +8,7 @@
 // Scans each block of g_idata separately and writes the result to g_odata.
 // g_idata and g_odata are arrays available on device of length n
 // Writes the sum of each block to lasts[blockIdx.x]
-__global__ void hillis_steele(float* g_odata, float* lasts, const float* g_idata, unsigned int n, bool write_lasts) {
+__global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts) {
     extern volatile __shared__ float s[];
 
     int tid = threadIdx.x;
@@ -48,7 +48,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts, const float* g_idata
 }
 
 // Increment each element corresponding to block b_i of arr by lasts[b_i]
-__global__ void inc_blocks(float* arr, const float* lasts, unsigned int n) {
+__global__ void inc_blocks(float* arr, float* lasts, unsigned int n) {
     unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
     if (index < n) {
         arr[index] = arr[index] + lasts[blockIdx.x];
