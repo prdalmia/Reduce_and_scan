@@ -76,7 +76,7 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     void *kernelArgs[] = {
         (void *)&out,  (void *)&lasts, (void *)&in, (void *)&n, (void *)&write_lasts 
     };
-      cudaLaunchCooperativeKernel((void*)hillis_steele, nBlocks, threads_per_block,  kernelArgs, shmem, 0);
+    cudaLaunchCooperativeKernel((void*)hillis_steele, nBlocks, threads_per_block,  kernelArgs, shmem, 0);
     //hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
     // Swap input and output arrays
  //   float* tmp = in;
