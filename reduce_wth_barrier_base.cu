@@ -6,12 +6,7 @@
 #include <cooperative_groups.h>
 namespace cg = cooperative_groups;
 
- __global__ void reduce_kernel_d(const int* g_idata, int* g_odata, unsigned int n,  bool * global_sense, bool * perSMsense,
-    bool * done,
-    unsigned int* global_count,
-    unsigned int* local_count,
-    unsigned int* last_block,
-    const int NUM_SM) {
+ __global__ void reduce_kernel_d(const int* g_idata, int* g_odata, unsigned int n) {
     extern __shared__ int sdata[];
 
     unsigned int tid = threadIdx.x;
@@ -44,7 +39,7 @@ namespace cg = cooperative_groups;
      
  for (unsigned int n = N; n > 1; n = (n + blockDim.x - 1) / blockDim.x) {
     reduce_kernel_d<<<(n + blockDim.x - 1) / blockDim.x, blockDim.x,
-    blockDim.x * sizeof(int)>>>(g_idata, g_odata, n, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
+    blockDim.x * sizeof(int)>>>(g_idata, g_odata, n);
     
     cg::grid_group grid = cg::this_grid(); 
     cg::sync(grid);
