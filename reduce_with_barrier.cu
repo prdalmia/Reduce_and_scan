@@ -321,7 +321,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
    // }
     cudaDeviceSynchronize();
 
-    int sum = a[0];
+    int sum = *output;
 
     cudaFree(a);
     cudaFree(b);
