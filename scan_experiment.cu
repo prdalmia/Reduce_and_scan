@@ -38,7 +38,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         }
         __syncthreads();
     }
-    if (index < n && n <= blockDim.x) {
+    if (index < n) {
         g_odata[index] = s[pout * blockDim.x + tid];
     }
 
@@ -73,6 +73,7 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     //cudaLaunchCooperativeKernel((void*)hillis_steele, nBlocks, threads_per_block,  kernelArgs, shmem, 0);
     hillis_steele<<<((a + threads_per_block - 1) / threads_per_block), threads_per_block, shmem>>>(out, lasts, in, a, true);
  //    Swap input and output arrays
+ cudaDeviceSynchronize();
    float* tmp = in;
     in = lasts;
     lasts = tmp;
