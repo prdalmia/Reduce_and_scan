@@ -21,7 +21,7 @@ if (isMasterThread)
 __threadfence();
 // atomicInc effectively adds 1 to atomic for each TB that's part of the
 // global barrier.
-printf("Global barr is %d\n");
+//printf("Global barr is %d\n");
 atomicInc(globalBarr, 0x7FFFFFFF);
 }
 __syncthreads();
