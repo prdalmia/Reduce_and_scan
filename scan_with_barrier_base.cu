@@ -42,6 +42,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     }
     if (index < n ) {
         g_odata[index] = s[pout * blockDim.x + tid];
+        printf("g_odata is %f at index %d\n", g_odata[index], index);
     }
 
     if (write_lasts && threadIdx.x == 0) {
