@@ -53,7 +53,9 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
 __global__ void inc_blocks(float* arr, float* lasts, unsigned int n) {
     unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
     if (index < n) {
+        printf("arr_before is %d\n", arr[index]);
         arr[index] = arr[index] + lasts[blockIdx.x];
+        printf("arr_adter is %d\n", arr[index]);
     }
 }
 
