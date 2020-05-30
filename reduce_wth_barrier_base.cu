@@ -35,7 +35,7 @@ namespace cg = cooperative_groups;
     
 
     cg::grid_group grid = cg::this_grid(); 
-    cg::grid.sync();
+    grid.sync();
 
     __threadfence();
     
