@@ -9,7 +9,7 @@
 // g_odata is an array of length (n + blockDim.x - 1) / blockDim.x available on the device.
 // Expects a 1D configuration.
 // Uses only dynamically allocated shared memory.
-__global__ void reduce_kernel( int* g_idata, int* g_odata, unsigned int n);
+__global__ void reduce_kernel( int* g_idata, int* g_odata, unsigned int n, int * output);
 
 // Returns the sum of all element in arr.
 // Calls reduce_kernel repeatedly. _No part_ of the sum should be computed on host.
