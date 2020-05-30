@@ -39,6 +39,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts, const float* g_idata
     }
     if (index < n) {
         g_odata[index] = s[pout * blockDim.x + tid];
+        if(gridDim.x == 1)
         printf("g_odata is %f at index %d\n", g_odata[index], index);
     }
 
@@ -66,7 +67,7 @@ __host__ void scan(float* in, float* out, unsigned int n, unsigned int threads_p
     cudaDeviceSynchronize();
 
     // Scan lasts
-    //hillis_steele<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false);
+    hillis_steele<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false);
     cudaDeviceSynchronize();
 
     // Add starting value to each block
