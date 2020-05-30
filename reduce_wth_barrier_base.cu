@@ -32,7 +32,7 @@ namespace cg = cooperative_groups;
     if (tid == 0) {
         g_odata[blockIdx.x] = sdata[0];
     }
-    __syncthreads();
+    __threadfence();
     cg::grid_group grid = cg::this_grid(); 
     cg::sync(grid);
     int* tmp = g_idata;
@@ -41,7 +41,7 @@ namespace cg = cooperative_groups;
 }
 
 *output = g_idata[0];
-__threadfence();
+
  
 }
 
