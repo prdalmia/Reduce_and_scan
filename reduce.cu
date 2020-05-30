@@ -39,15 +39,15 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaMallocManaged(&b, N * sizeof(int));
     cudaMemcpy(a, arr, N * sizeof(int), cudaMemcpyHostToDevice);
 
- //   for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
-        reduce_kernel<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
-                        threads_per_block * sizeof(int)>>>(a, b, N);
+    for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
+        reduce_kernel<<<(n + threads_per_block - 1) / threads_per_block, threads_per_block,
+                        threads_per_block * sizeof(int)>>>(a, b, n);
 
         // Swap input and output arrays
         int* tmp = a;
         a = b;
         b = tmp;
- // }  
+  }  
     cudaDeviceSynchronize();
 
     int sum = a[0];
