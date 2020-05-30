@@ -65,15 +65,19 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaEventCreate(&stop);
 
     cudaEventRecord(start);
+
+    void *kernelArgs[] = {
+        (void *)&a,  (void *)&b, (void *)&N, (void *)&output }
+    };
+      cudaLaunchCooperativeKernel((void*)reduce_kernel, (N + threads_per_block - 1) / threads_per_block, threads_per_block,  kernelArgs);
     //for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
-        reduce_kernel<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
-                        threads_per_block * sizeof(int)>>>(a, b, N, output);
 
         // Swap input and output arrays
         //int* tmp = a;
         //a = b;
         //b = tmp;
-   // }cudaEventRecord(stop);
+   // }
+     cudaEventRecord(stop);
     cudaDeviceSynchronize();
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
