@@ -14,7 +14,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
 
     int tid = threadIdx.x;
     unsigned int index = blockDim.x * blockIdx.x + tid;
-    for (unsigned int a = n; a > 1; a = (a + threads_per_block - 1) / threads_per_block) {
+    for (unsigned int a = n; a > 1; a = (a + blockDim.x - 1) / blockDim.x) {
     int pout = 0;
     int pin = 1;
 
