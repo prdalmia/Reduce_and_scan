@@ -40,6 +40,7 @@ namespace cg = cooperative_groups;
 }
 
 *output = g_idata[0];
+__threadfence();
  
 }
 
