@@ -181,6 +181,7 @@ __syncthreads();
     }
 cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense[smID], global_sense);
 }
+*done = 0;
 }
 
 
