@@ -31,6 +31,8 @@ namespace cg = cooperative_groups;
     // Write out reduced portion of the output
     if (tid == 0) {
         g_odata[blockIdx.x] = sdata[0];
+        if(blockIdx == 0)
+        printf("The output of the block is %d", sdata[0]);
     }
     
    __syncthreads();
@@ -77,7 +79,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
         //a = b;
         //b = tmp;
    // }
-     cudaEventRecord(stop);
+    cudaEventRecord(stop);
     cudaDeviceSynchronize();
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
