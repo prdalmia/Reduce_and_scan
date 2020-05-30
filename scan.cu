@@ -67,11 +67,12 @@ __host__ void scan(float* in, float* out, unsigned int n, unsigned int threads_p
     cudaDeviceSynchronize();
 
     // Scan lasts
+    
     hillis_steele<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false);
     cudaDeviceSynchronize();
 
     // Add starting value to each block
-    //inc_blocks<<<nBlocks, threads_per_block>>>(out, lasts, n);
+    inc_blocks<<<nBlocks, threads_per_block>>>(out, lasts, n);
     cudaDeviceSynchronize();
 
     cudaFree(lasts);
