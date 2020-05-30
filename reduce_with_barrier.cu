@@ -1,6 +1,7 @@
 // Author: Nic Olsen
 
 #include <iostream>
+#include <cuda.h>
 #include <stdio.h>
 #include "reduce.cuh"
 
@@ -308,7 +309,12 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
        cudaMemset(&last_block[i], 0, sizeof(unsigned int));
      }
     cudaMemcpy(a, arr, N * sizeof(int), cudaMemcpyHostToDevice);
+    cudaEvent_t start;
+    cudaEvent_t stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
 
+    cudaEventRecord(start);
     //for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
         reduce_kernel<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
                         threads_per_block * sizeof(int)>>>(a, b, N, output, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
@@ -318,7 +324,11 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
         //a = b;
         //b = tmp;
    // }
+   cudaEventRecord(stop);
     cudaDeviceSynchronize();
+    float ms;
+    cudaEventElapsedTime(&ms, start, stop);
+    std::cout << "time cuda only(ms) " << ms << std::endl;
 
     int sum = *output;
 
