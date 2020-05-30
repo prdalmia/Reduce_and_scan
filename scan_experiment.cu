@@ -78,7 +78,6 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     lasts = tmp;
    }
 //    std::cout << in[a-1] << std::endl;
-  }
     // Scan lasts
     //hillis_steele<<<1, threads_per_block, shmem>>>(lasts, nullptr, lasts, nBlocks, false);
     cudaDeviceSynchronize();
