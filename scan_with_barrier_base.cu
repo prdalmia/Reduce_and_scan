@@ -33,6 +33,8 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         s[tid] = 0.f;
     } else {
         s[tid] = g_idata[index - 1];
+        if(a <n )
+        printf("g_idata is %f at index %d\n", g_idata[index-1], index-1);
     }
     
     __syncthreads();
