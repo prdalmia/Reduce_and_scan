@@ -65,7 +65,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         printf("lasts is %f at index %d\n", lasts[blockIdx.x], blockIdx.x);
     }
     cg::sync(grid); 
-    if(a == n && index == 0){
+    if(a == n){
       tmp1 = g_idata;
       tmp2 = g_odata;
       tmp3 = lasts;
