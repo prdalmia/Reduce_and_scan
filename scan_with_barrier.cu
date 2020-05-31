@@ -275,6 +275,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     
     if(tid ==0 && blockIdx.x == 0 ){
         *global_sense = ~(*global_sense);
+        __threadfence();
     }
     __syncthreads();
     if(a == n ){
