@@ -277,7 +277,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     __syncthreads();
     }
     if(threadIdx.x == 0){
-    perSMsense[smID] = ~perSMsense[smID];
+    perSMsense[blockIdx.x] = ~perSMsense[blockIdx.x];
     }
     __syncthreads();
     kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);      
