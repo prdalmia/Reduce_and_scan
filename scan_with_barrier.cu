@@ -27,6 +27,7 @@ __threadfence();
 // atomicInc effectively adds 1 to atomic for each TB that's part of the
 // global barrier.
 atomicInc(globalBarr, 0x7FFFFFFF);
+printf("globalBarr is %d", *globalBarr)
 }
 __syncthreads();
 
@@ -278,12 +279,10 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
       g_odata = lasts;
       write_p = false;
       a = (n + blockDim.x - 1) / blockDim.x;
-      __threadfence();
     }
    }
 
     g_odata = tmp2;
-    __syncthreads();
     if (index < n) {
         g_odata[index] = g_odata[index] + lasts[blockIdx.x];
       //  printf("g_odata is %f at index %d\n", g_odata[index], index);
