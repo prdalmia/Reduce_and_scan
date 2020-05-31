@@ -105,6 +105,7 @@ barrier.  For the local barrier, this requires using the per-CU
 locations.
 */
 atomicInc(perSMBarr, 0x7FFFFFFF);
+printf("Local Barrier is %d\n", *perSMBarr);
 }
 __syncthreads();
 
