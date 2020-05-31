@@ -14,8 +14,6 @@ namespace cg = cooperative_groups;
 
 __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts) {
     extern volatile __shared__ float s[];
-
-    
     
     float *tmp1;
     float * tmp2;
@@ -36,7 +34,6 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         s[tid] = 0.f;
     } else {
         s[tid] = g_idata[index - 1];
-        if(a < n)
        }
     
     __syncthreads();
@@ -55,13 +52,11 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     if (index < a ) {
         g_odata[index] = s[pout * blockDim.x + tid];
         if(a <n )
-        printf("g_odata is %f at index %d\n", g_odata[index], index);
     }
 
     if (write_p && threadIdx.x == 0) {
         unsigned int block_end = blockIdx.x * blockDim.x + blockDim.x - 1;
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
-        printf("lasts is %f at index %d\n", lasts[blockIdx.x], blockIdx.x);
     }
     cg::sync(grid); 
     if(a == n){
@@ -78,18 +73,6 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     __syncthreads();
    }
 
-/*    
-    cg::sync(grid); 
-  if(a == n && index == 0){
-    tmp1 = g_idata;
-    tmp2 = g_odata;
-    g_idata = lasts;
-    g_odata = lasts;
-    write_p = false;
-  }
-  
-}
-*/
     lasts = tmp3;
     g_odata = tmp2;
     __syncthreads();
