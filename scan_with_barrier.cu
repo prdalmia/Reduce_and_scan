@@ -208,9 +208,10 @@ NUM_SM);
 const int smID = (blockIdx.x % numBlocksAtBarr); // mod by # SMs to get SM ID
 // all thread blocks on the same SM access unique locations because the
 // barrier can't ensure DRF between TBs
-if(smID == 0 && blockIdx.x ==0 && isMasterThread){
-    printf("Num block at Barr is %d\n", numBlocksAtBarr );
-}
+if(isMasterThread){
+        perSMsense[smID] = ~perSMsense[smID];
+        }
+__syncthreads();
 const int perSM_blockID = (blockIdx.x / numBlocksAtBarr);
 // given the gridDim.x, we can figure out how many TBs are on our SM -- assume
 // all SMs have an identical number of TBs
@@ -276,10 +277,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     if(a==n){
     __syncthreads();
     }
-    if(threadIdx.x == 0){
-    perSMsense[blockIdx.x] = ~perSMsense[blockIdx.x];
-    }
-    __syncthreads();
+    
     kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);      
     if(a == n ){
       tmp1 = g_idata;
