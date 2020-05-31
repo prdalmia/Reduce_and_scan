@@ -206,9 +206,13 @@ const bool isMasterThread = ((threadIdx.x == 0) && (threadIdx.y == 0) &&
 // fewer TBs than SMs).
 const unsigned int numBlocksAtBarr = ((gridDim.x < NUM_SM) ? gridDim.x :
 NUM_SM);
+
 const int smID = (blockIdx.x % numBlocksAtBarr); // mod by # SMs to get SM ID
 // all thread blocks on the same SM access unique locations because the
 // barrier can't ensure DRF between TBs
+if(smID == 0 && blockIdx.x ==0 && isMasterThread){
+    printf("Num block at Barr is %d", numBlocksAtBarr );
+}
 const int perSM_blockID = (blockIdx.x / numBlocksAtBarr);
 // given the gridDim.x, we can figure out how many TBs are on our SM -- assume
 // all SMs have an identical number of TBs
