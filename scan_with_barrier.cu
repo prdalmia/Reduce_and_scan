@@ -214,8 +214,9 @@ numBlocksAtBarr, smID, perSM_blockID, numTBs_perSM,
 isMasterThread);
 
 if(isMasterThread){
-    *global_sense = false;
     __threadfence();
+    *global_sense = false;
+        printf("Exiting global Barrier for blockID %d and  global sense is %d\n", blockIdx.x,  *global_sense);
 }
 __syncthreads();
 }
