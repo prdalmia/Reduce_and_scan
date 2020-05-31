@@ -46,7 +46,7 @@ if (atomicCAS(globalBarr, numBarr, 0) == numBarr) {
 // atomicCAS acts as a load acquire, need TF to enforce ordering
 __threadfence();
 *global_sense = *sense;
-printf("Global sense hili\n");
+printf("Global sense hili with TBid %d\n", blockIdx.x);
 __threadfence();
 }
 else { // increase backoff to avoid repeatedly hammering global barrier
@@ -274,10 +274,6 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
     }
     //__syncthreads();
-    if(tid ==0) {
-        printf("Inside global Barrier for blockID %d and  global sense is %d\n", blockIdx.x,  *global_sense);
-    }   
-    __syncthreads();
     kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);      
     if(a == n ){
       tmp1 = g_idata;
