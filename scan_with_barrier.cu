@@ -21,14 +21,12 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
 __syncthreads();
 if (isMasterThread)
 {
-    printf("globalBarr entered for blockId %d\n", blockIdx.x);
 //printf("Inside global Barrier for blockID %d and sense is %d and global sense is %d\n", blockIdx.x, *sense, *global_sense);
 // atomicInc acts as a store release, need TF to enforce ordering
 __threadfence();
 // atomicInc effectively adds 1 to atomic for each TB that's part of the
 // global barrier.
 atomicInc(globalBarr, 0x7FFFFFFF);
-printf("globalBarr is %d reached for blockId %d\n", *globalBarr, blockIdx.x);
 }
 __syncthreads();
 
@@ -49,7 +47,6 @@ if (atomicCAS(globalBarr, numBarr, 0) == numBarr) {
 __threadfence();
 *global_sense = *sense;
 __threadfence();
- printf("Setting global sense = sense \n");
 }
 else { // increase backoff to avoid repeatedly hammering global barrier
 // (capped) exponential backoff
@@ -79,7 +76,6 @@ __shared__ int backoff;
 
 if (isMasterThread) {
 backoff = 1;
-printf("Barshala entered for blockId %d\n", blockIdx.x);
 }
 __syncthreads();
 
