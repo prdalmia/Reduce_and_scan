@@ -51,7 +51,6 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     }
     if (index < a ) {
         g_odata[index] = s[pout * blockDim.x + tid];
-        if(a <n )
     }
 
     if (write_p && threadIdx.x == 0) {
