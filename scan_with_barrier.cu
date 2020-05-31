@@ -79,9 +79,10 @@ __shared__ int backoff;
 
 if (isMasterThread) {
 backoff = 1;
+printf("Barshala entered for blockId %d\n", blockIdx.x);
 }
 __syncthreads();
-printf("Barshala entered for blockId %d\n", blockIdx.x);
+
 cudaBarrierAtomicSubSRB(barrierBuffers, numBarr, backoff, isMasterThread, sense, global_sense);
 }
 
