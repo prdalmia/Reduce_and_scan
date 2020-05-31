@@ -15,8 +15,7 @@ namespace cg = cooperative_groups;
 __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts) {
     extern volatile __shared__ float s[];
 
-    int tid = threadIdx.x;
-    unsigned int index = blockDim.x * blockIdx.x + tid;
+    
     
     float *tmp1;
     float * tmp2;
@@ -24,6 +23,8 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     cg::grid_group grid = cg::this_grid(); 
     int a = n;
    for( int i = 0 ; i < 2 ; i++){
+    int tid = threadIdx.x;
+    unsigned int index = blockDim.x * blockIdx.x + tid;
     int pout = 0;
     int pin = 1;
 
@@ -34,8 +35,8 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     } else {
         s[tid] = g_idata[index - 1];
         if(a < n)
-        printf("g_idata is %f at index %d\n", g_idata[index-1], index-1);
-    }
+        {printf("g_idata is %f at index %d\n", g_idata[index-1], index-1);}
+       }
     
     __syncthreads();
 
