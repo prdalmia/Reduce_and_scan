@@ -61,7 +61,6 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     if (write_p && threadIdx.x == 0) {
         unsigned int block_end = blockIdx.x * blockDim.x + blockDim.x - 1;
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
-        if(a == n)
         printf("lasts is %f at index %d\n", lasts[blockIdx.x], blockIdx.x);
     }
     cg::sync(grid); 
@@ -73,6 +72,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
       write_p = false;
       a = (n + blockDim.x - 1) / blockDim.x;
       __threadfence();
+      printf("values are %f %f %f %f\n", g_idata[0], g_idata[1], g_idata[2], g_idata[3])
     }
     __syncthreads();
 }
