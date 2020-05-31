@@ -188,10 +188,6 @@ __syncthreads();
     printf("Barshala frontttttt entered for blockId %d\n", blockIdx.x);
     }
     __syncthreads();
-    if(isMasterThread){
-        printf("Barshala front entered for blockId %d\n", blockIdx.x);
-    }
-    __syncthreads();
 cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense[smID], global_sense);
 }
 }
