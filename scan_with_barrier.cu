@@ -204,11 +204,7 @@ NUM_SM);
 const int smID = (blockIdx.x % numBlocksAtBarr); // mod by # SMs to get SM ID
 // all thread blocks on the same SM access unique locations because the
 // barrier can't ensure DRF between TBs
-if(isMasterThread){
-        perSMsense[smID] = ~perSMsense[smID];
-        __threadfence();
-        }
-__syncthreads();
+
 const int perSM_blockID = (blockIdx.x / numBlocksAtBarr);
 // given the gridDim.x, we can figure out how many TBs are on our SM -- assume
 // all SMs have an identical number of TBs
@@ -220,6 +216,10 @@ joinBarrier_helperSRB(global_sense, perSMsense, done, global_count, local_count,
 numBlocksAtBarr, smID, perSM_blockID, numTBs_perSM,
 isMasterThread);
 
+if(smID ==0 && blockIdx.x == 0 && isMasterThread){
+    *global_sense = ~(*global_sense);
+}
+__syncthreads();
 }
 
 
@@ -332,7 +332,7 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     cudaMemset(global_count, 0, sizeof(unsigned int));
 
     for (int i = 0; i < NUM_SM; ++i) {
-       cudaMemset(&perSMsense[i], false, sizeof(bool));
+       cudaMemset(&perSMsense[i], true, sizeof(bool));
        cudaMemset(&local_count[i], 0, sizeof(unsigned int));
        cudaMemset(&last_block[i], 0, sizeof(unsigned int));
      }
