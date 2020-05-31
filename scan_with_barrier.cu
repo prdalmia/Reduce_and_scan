@@ -21,7 +21,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
 __syncthreads();
 if (isMasterThread)
 {
-printf("Inside global Barrier for blockID %d and sense is %d and global sense is %d\n", blockIdx.x, *sense, *global_sense);
+//printf("Inside global Barrier for blockID %d and sense is %d and global sense is %d\n", blockIdx.x, *sense, *global_sense);
 // atomicInc acts as a store release, need TF to enforce ordering
 __threadfence();
 // atomicInc effectively adds 1 to atomic for each TB that's part of the
@@ -209,7 +209,10 @@ const int perSM_blockID = (blockIdx.x / numBlocksAtBarr);
 
 int numTBs_perSM = (int)ceil((float)gridDim.x / numBlocksAtBarr);
 
-
+if(isMasterThread){
+    printf("Inside global Barrier for blockID %d\n", blockIdx.x);
+    }
+    __synchthreads();
 joinBarrier_helperSRB(global_sense, perSMsense, done, global_count, local_count, last_block,
 numBlocksAtBarr, smID, perSM_blockID, numTBs_perSM,
 isMasterThread);
