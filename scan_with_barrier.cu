@@ -184,6 +184,7 @@ __syncthreads();
 } else { // if only 1 TB on the SM, no need for the local barriers
     if(isMasterThread){
     perSMsense[smID] = ~perSMsense[smID];
+    printf("Barshala frontttttt entered for blockId %d\n", blockIdx.x);
     __threadfence();
     }
     __syncthreads();
