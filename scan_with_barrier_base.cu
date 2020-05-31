@@ -22,12 +22,13 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     bool write_p = write_lasts;
     cg::grid_group grid = cg::this_grid(); 
     int a = n;
-   for( int i = 0 ; i < 2 ; i++){
     int tid = threadIdx.x;
     unsigned int index = blockDim.x * blockIdx.x + tid;
     int pout = 0;
     int pin = 1;
-
+   for( int i = 0 ; i < 2 ; i++){
+       pout = 0;
+       pin = 1;
     if (index >= a) {
         s[tid] = 0.f;
     } else if (tid == 0) {
