@@ -124,6 +124,7 @@ if (atomicCAS(perSMBarr, numTBs_thisSM, 0) == numTBs_thisSM) {
 // locally
 __threadfence_block();
 *sense = s;
+printf("Local Barrier complete\n");
 *last_block = blockIdx.x;
 }
 }
