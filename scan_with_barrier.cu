@@ -269,6 +269,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         unsigned int block_end = blockIdx.x * blockDim.x + blockDim.x - 1;
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
     }
+    __syncthreads();
     kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);      
     if(a == n ){
       tmp1 = g_idata;
