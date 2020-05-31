@@ -215,11 +215,6 @@ int numTBs_perSM = (int)ceil((float)gridDim.x / numBlocksAtBarr);
 joinBarrier_helperSRB(global_sense, perSMsense, done, global_count, local_count, last_block,
 numBlocksAtBarr, smID, perSM_blockID, numTBs_perSM,
 isMasterThread);
-
-if(smID ==0 && blockIdx.x == 0 && isMasterThread){
-    *global_sense = ~(*global_sense);
-}
-__syncthreads();
 }
 
 
@@ -276,6 +271,11 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     }
     
     kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);      
+    
+    if(tid ==0 && blockIdx.x == 0 ){
+        *global_sense = ~(*global_sense);
+    }
+    __syncthreads();
     if(a == n ){
       tmp1 = g_idata;
       tmp2 = g_odata;
