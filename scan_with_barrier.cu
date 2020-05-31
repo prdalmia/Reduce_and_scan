@@ -76,6 +76,7 @@ inline __device__ void cudaBarrierAtomicSRB(unsigned int * barrierBuffers,
 __shared__ int backoff;
 
 if (isMasterThread) {
+    printf("Entering Global barrier\n");
 backoff = 1;
 }
 __syncthreads();
@@ -159,7 +160,6 @@ const int numTBs_perSM,
 const bool isMasterThread) {                                 
 __syncthreads();
 if (numTBs_perSM > 1) {
-    printf("Entering Here\n");
 cudaBarrierAtomicLocalSRB(&local_count[smID], &last_block[smID], smID, numTBs_perSM, isMasterThread, &perSMsense[smID]);
 
 // only 1 TB per SM needs to do the global barrier since we synchronized
