@@ -47,7 +47,7 @@ if (atomicCAS(globalBarr, numBarr, 0) == numBarr) {
 // atomicCAS acts as a load acquire, need TF to enforce ordering
 __threadfence();
 *global_sense = *sense;
-//  printf("Setting global sense = sense \n");
+ printf("Setting global sense = sense \n");
 }
 else { // increase backoff to avoid repeatedly hammering global barrier
 // (capped) exponential backoff
