@@ -206,6 +206,7 @@ const int smID = (blockIdx.x % numBlocksAtBarr); // mod by # SMs to get SM ID
 // barrier can't ensure DRF between TBs
 if(isMasterThread){
         perSMsense[smID] = ~perSMsense[smID];
+        __threadfence();
         }
 __syncthreads();
 const int perSM_blockID = (blockIdx.x / numBlocksAtBarr);
