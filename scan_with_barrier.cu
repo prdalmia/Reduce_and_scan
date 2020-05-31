@@ -182,6 +182,7 @@ __syncthreads();
     if(isMasterThread){
     perSMsense[smID] = ~perSMsense[smID];
     }
+    __syncthreads();
 cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense[smID], global_sense);
 }
 }
