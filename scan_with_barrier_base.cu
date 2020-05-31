@@ -19,6 +19,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     
     float *tmp1;
     float * tmp2;
+    float* tmp3;
     bool write_p = write_lasts;
     cg::grid_group grid = cg::this_grid(); 
     int a = n;
@@ -67,15 +68,16 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     if(a == n && index == 0){
       tmp1 = g_idata;
       tmp2 = g_odata;
+      tmp3 = lasts;
       g_idata = lasts;
       g_odata = lasts;
+      lasts = nullptr;
       write_p = false;
-      a = (n + blockDim.x - 1) / blockDim.x + 1;
+      a = (n + blockDim.x - 1) / blockDim.x;
       __threadfence();
-      printf("values are %f %f %f %f\n", g_idata[0], g_idata[1], g_idata[2], g_idata[3]);
-      printf("values are %f %f %f %f\n", g_idata[0], g_idata[1], g_idata[2], g_idata[3]);
+      __syncthreads();
     }
-    __syncthreads();
+   
 }
 
 /*    
@@ -90,6 +92,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
   
 }
 */
+    lasts = tmp3;
     g_odata = tmp2;
     __syncthreads();
     if (index < n) {
