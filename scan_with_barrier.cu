@@ -182,12 +182,6 @@ __threadfence();
 __syncthreads();
 }    
 } else { // if only 1 TB on the SM, no need for the local barriers
-    if(isMasterThread){
-    perSMsense[smID] = ~perSMsense[smID];
-    __threadfence();
-    printf("Barshala frontttttt entered for blockId %d\n", blockIdx.x);
-    }
-    __syncthreads();
 cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense[smID], global_sense);
 }
 }
@@ -282,6 +276,10 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     if(a==n){
     __syncthreads();
     }
+    if(threadIdx.x == 0){
+    perSMsense[smID] = ~perSMsense[smID];
+    }
+    __syncthreads();
     kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);      
     if(a == n ){
       tmp1 = g_idata;
