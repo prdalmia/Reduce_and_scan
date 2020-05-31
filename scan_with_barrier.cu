@@ -221,26 +221,22 @@ isMasterThread);
 }
 
 
-__global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts, bool * global_sense,
-    bool * perSMsense,
-    bool * done,
-    unsigned int* global_count,
-    unsigned int* local_count,
-    unsigned int* last_block,
-    const int NUM_SM) {
+_global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts) {
     extern volatile __shared__ float s[];
 
-    int tid = threadIdx.x;
-    unsigned int index = blockDim.x * blockIdx.x + tid;
+    
     
     float *tmp1;
     float * tmp2;
     bool write_p = write_lasts;
     int a = n;
-   for( int i = 0 ; i < 2 ; i++){
+    int tid = threadIdx.x;
+    unsigned int index = blockDim.x * blockIdx.x + tid;
     int pout = 0;
     int pin = 1;
-
+   for( int i = 0 ; i < 2 ; i++){
+       pout = 0;
+       pin = 1;
     if (index >= a) {
         s[tid] = 0.f;
     } else if (tid == 0) {
@@ -271,36 +267,26 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
     }
     kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);      
-    if(a == n && index == 0){
+    if(a == n ){
       tmp1 = g_idata;
       tmp2 = g_odata;
       g_idata = lasts;
       g_odata = lasts;
       write_p = false;
       a = (n + blockDim.x - 1) / blockDim.x;
+      __threadfence();
     }
     __syncthreads();
-}
+   }
 
-/*    
-    cg::sync(grid); 
-  if(a == n && index == 0){
-    tmp1 = g_idata;
-    tmp2 = g_odata;
-    g_idata = lasts;
-    g_odata = lasts;
-    write_p = false;
-  }
-  
-}
-*/
     g_odata = tmp2;
     __syncthreads();
     if (index < n) {
         g_odata[index] = g_odata[index] + lasts[blockIdx.x];
-        printf("g_odata is %f at index %d\n", g_odata[index], index);
+      //  printf("g_odata is %f at index %d\n", g_odata[index], index);
     }
 }
+
 
 // Increment each element corresponding to block b_i of arr by lasts[b_i]
 __global__ void inc_blocks(float* arr, float* lasts, unsigned int n) {
