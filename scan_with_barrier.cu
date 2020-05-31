@@ -76,7 +76,6 @@ inline __device__ void cudaBarrierAtomicSRB(unsigned int * barrierBuffers,
 __shared__ int backoff;
 
 if (isMasterThread) {
-    printf("Entering Global barrier\n");
 backoff = 1;
 }
 __syncthreads();
@@ -105,7 +104,6 @@ barrier.  For the local barrier, this requires using the per-CU
 locations.
 */
 atomicInc(perSMBarr, 0x7FFFFFFF);
-printf("Local Barrier is %d\n", *perSMBarr);
 }
 __syncthreads();
 
