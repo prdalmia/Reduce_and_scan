@@ -271,7 +271,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     }
     //__syncthreads();
     if(tid ==0) {
-        printf("Inside global Barrier for blockID %d and sense is %d and global sense is %d\n", blockIdx.x, *sense, *global_sense);
+        printf("Inside global Barrier for blockID %d and  global sense is %d\n", blockIdx.x,  *global_sense);
     }   
     __syncthreads();
     kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);      
