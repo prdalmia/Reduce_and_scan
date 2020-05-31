@@ -75,10 +75,9 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
       write_p = false;
       a = (n + blockDim.x - 1) / blockDim.x;
       __threadfence();
-      __syncthreads();
     }
-   
-}
+    __syncthreads();
+   }
 
 /*    
     cg::sync(grid); 
