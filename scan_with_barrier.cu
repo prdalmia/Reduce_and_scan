@@ -61,7 +61,7 @@ __syncthreads();
 //if (*global_sense != *sense) {
 //for (int i = 0; i < backoff; ++i) { ; }
 //__syncthreads();
-}
+//}
 }
 }
 
