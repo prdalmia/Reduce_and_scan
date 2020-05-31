@@ -221,11 +221,8 @@ isMasterThread);
 }
 
 
-_global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts) {
+__global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, unsigned int n, bool write_lasts) {
     extern volatile __shared__ float s[];
-
-    
-    
     float *tmp1;
     float * tmp2;
     bool write_p = write_lasts;
