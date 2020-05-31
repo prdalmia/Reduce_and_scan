@@ -253,6 +253,10 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     for (unsigned int offset = 1; offset < blockDim.x; offset <<= 1) {
         pout = 1 - pout;
         pin = 1 - pout;
+        if(tid ==0) {
+            printf("Inside global Barrier for blockID %d and  global sense is %d\n", blockIdx.x,  *global_sense);
+        }   
+        __syncthreads();
 
         if (tid >= offset) {
             s[pout * blockDim.x + tid] = s[pin * blockDim.x + tid] + s[pin * blockDim.x + tid - offset];
