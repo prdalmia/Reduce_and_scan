@@ -27,7 +27,7 @@ __threadfence();
 // atomicInc effectively adds 1 to atomic for each TB that's part of the
 // global barrier.
 atomicInc(globalBarr, 0x7FFFFFFF);
-printf("globalBarr is %d reached for blockIdx.x\n", *globalBarr, blockIdx.x);
+printf("globalBarr is %d reached for blockId %d\n", *globalBarr, blockIdx.x);
 }
 __syncthreads();
 
