@@ -72,7 +72,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
       write_p = false;
       a = (n + blockDim.x - 1) / blockDim.x;
       __threadfence();
-      printf("values are %f %f %f %f\n", g_idata[0], g_idata[1], g_idata[2], g_idata[3])
+      printf("values are %f %f %f %f\n", g_idata[0], g_idata[1], g_idata[2], g_idata[3]);
     }
     __syncthreads();
 }
