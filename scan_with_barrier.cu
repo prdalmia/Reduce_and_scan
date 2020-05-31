@@ -81,7 +81,7 @@ if (isMasterThread) {
 backoff = 1;
 }
 __syncthreads();
-
+printf("Barshala entered for blockId %d\n", blockIdx.x);
 cudaBarrierAtomicSubSRB(barrierBuffers, numBarr, backoff, isMasterThread, sense, global_sense);
 }
 
@@ -213,7 +213,7 @@ const int smID = (blockIdx.x % numBlocksAtBarr); // mod by # SMs to get SM ID
 // all thread blocks on the same SM access unique locations because the
 // barrier can't ensure DRF between TBs
 if(smID == 0 && blockIdx.x ==0 && isMasterThread){
-    printf("Num block at Barr is %d", numBlocksAtBarr );
+    printf("Num block at Barr is %d\n", numBlocksAtBarr );
 }
 const int perSM_blockID = (blockIdx.x / numBlocksAtBarr);
 // given the gridDim.x, we can figure out how many TBs are on our SM -- assume
