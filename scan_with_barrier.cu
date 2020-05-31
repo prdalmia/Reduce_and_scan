@@ -164,9 +164,6 @@ cudaBarrierAtomicLocalSRB(&local_count[smID], &last_block[smID], smID, numTBs_pe
 // only 1 TB per SM needs to do the global barrier since we synchronized
 // the TBs locally first
 if (blockIdx.x == last_block[smID]) {
-    if(isMasterThread && perSM_blockID == 0){    
-    }
-    __syncthreads();
 cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread , &perSMsense[smID], global_sense);  
 //*done = 1;
 }
@@ -219,6 +216,7 @@ isMasterThread);
 
 if(isMasterThread){
     *global_sense = false;
+    __threadfence();
 }
 __syncthreads();
 }
@@ -272,10 +270,8 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
         unsigned int block_end = blockIdx.x * blockDim.x + blockDim.x - 1;
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
     }
-
-    __threadfence();    
+    __syncthreads();    
     kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);      
-    __syncthreads();
     if(a == n ){
       tmp1 = g_idata;
       tmp2 = g_odata;
