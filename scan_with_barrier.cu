@@ -21,6 +21,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
 __syncthreads();
 if (isMasterThread)
 {
+    printf("globalBarr entered for blockId %d\n", blockIdx.x);
 //printf("Inside global Barrier for blockID %d and sense is %d and global sense is %d\n", blockIdx.x, *sense, *global_sense);
 // atomicInc acts as a store release, need TF to enforce ordering
 __threadfence();
