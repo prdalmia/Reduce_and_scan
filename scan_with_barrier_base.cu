@@ -95,7 +95,7 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     float* lasts;
     cudaMallocManaged(&lasts, nBlocks * sizeof(float));
     bool write_lasts = true;
-    unsigned int shmem = 2 * threads_per_block * sizeof(float);
+    unsigned int shmem = 4 * threads_per_block * sizeof(float);
    // hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, true);
     //cudaDeviceSynchronize();
    //for (unsigned int a = n; a > 1; a = (a + threads_per_block - 1) / threads_per_block) {
