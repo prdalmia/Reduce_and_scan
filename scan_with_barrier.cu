@@ -178,6 +178,10 @@ __threadfence();
 __syncthreads();
 }    
 } else { // if only 1 TB on the SM, no need for the local barriers
+    if(isMasterThread){
+        perSMsense[smID] = ~perSMsense[smID];
+    }
+    __synchthreads();
 cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense[smID], global_sense);
 }
 }
@@ -216,8 +220,6 @@ numBlocksAtBarr, smID, perSM_blockID, numTBs_perSM,
 isMasterThread);
 
 if(isMasterThread){
-    __threadfence();
-    *global_sense = false;
         printf("Exiting global Barrier for blockID %d and  global sense is %d\n", blockIdx.x,  *global_sense);
 }
 __syncthreads();
@@ -242,12 +244,9 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     int pin = 1;
    for( int i = 0 ; i < 2 ; i++){
        pout = 0;
-       pin = 1;
-       if(tid ==0) {
-        printf("Insidee global Barrier for blockID %d and  global sense is %d\n", blockIdx.x,  *global_sense);
-    }   
-    __syncthreads();
-    if (index >= a) {
+       pin = 1; 
+    
+       if (index >= a) {
         s[tid] = 0.f;
     } else if (tid == 0) {
         s[tid] = 0.f;
@@ -271,6 +270,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     if (index < a ) {
         g_odata[index] = s[pout * blockDim.x + tid];
     }
+
     if (write_p && threadIdx.x == 0) {
         unsigned int block_end = blockIdx.x * blockDim.x + blockDim.x - 1;
         lasts[blockIdx.x] = s[pout * blockDim.x + blockDim.x - 1] + g_idata[block_end];
@@ -285,6 +285,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
       write_p = false;
       a = (n + blockDim.x - 1) / blockDim.x;
     }
+    __synchthreads();
    }
 
     g_odata = tmp2;
@@ -333,7 +334,7 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     cudaMemset(global_count, 0, sizeof(unsigned int));
 
     for (int i = 0; i < NUM_SM; ++i) {
-       cudaMemset(&perSMsense[i], true, sizeof(bool));
+       cudaMemset(&perSMsense[i], false, sizeof(bool));
        cudaMemset(&local_count[i], 0, sizeof(unsigned int));
        cudaMemset(&last_block[i], 0, sizeof(unsigned int));
      }
