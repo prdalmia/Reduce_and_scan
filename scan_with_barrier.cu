@@ -334,6 +334,8 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
      }
     //cudaLaunchCooperativeKernel((void*)hillis_steele, nBlocks, threads_per_block,  kernelArgs, shmem, 0);
     hillis_steele<<<nBlocks, threads_per_block, shmem>>>(out, lasts, in, n, write_lasts, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
+    
+    std::cout <<cudaGetLastError() <<std::endl;
     // Swap input and output arrays
  //   float* tmp = in;
  //   in = lasts;
