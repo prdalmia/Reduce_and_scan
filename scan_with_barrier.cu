@@ -181,7 +181,7 @@ __syncthreads();
     if(isMasterThread){
         perSMsense[smID] = ~perSMsense[smID];
     }
-    __synchthreads();
+    __syncthreads();
 cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense[smID], global_sense);
 }
 }
@@ -285,7 +285,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
       write_p = false;
       a = (n + blockDim.x - 1) / blockDim.x;
     }
-    __synchthreads();
+    __syncthreads();
    }
 
     g_odata = tmp2;
@@ -351,4 +351,10 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
     cudaDeviceSynchronize();
 
     cudaFree(lasts);
+    cudaFree(global_sense);
+    cudaFree(sense);
+    cudaFree(local_count);
+    cudaFree(global_count);
+    cudaFree(last_block);
+    cudaFree()
 }
