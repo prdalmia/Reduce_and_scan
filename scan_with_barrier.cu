@@ -352,9 +352,8 @@ __host__ void scan( float* in, float* out, unsigned int n, unsigned int threads_
 
     cudaFree(lasts);
     cudaFree(global_sense);
-    cudaFree(sense);
+    cudaFree(perSMsense);
     cudaFree(local_count);
     cudaFree(global_count);
     cudaFree(last_block);
-    cudaFree()
 }
