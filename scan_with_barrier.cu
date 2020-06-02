@@ -214,15 +214,9 @@ const int perSM_blockID = (blockIdx.x / numBlocksAtBarr);
 // all SMs have an identical number of TBs
 
 int numTBs_perSM = (int)ceil((float)gridDim.x / numBlocksAtBarr);
-    __syncthreads();
 joinBarrier_helperSRB(global_sense, perSMsense, done, global_count, local_count, last_block,
 numBlocksAtBarr, smID, perSM_blockID, numTBs_perSM,
 isMasterThread);
-
-if(isMasterThread){
-        printf("Exiting global Barrier for blockID %d and  global sense is %d\n", blockIdx.x,  *global_sense);
-}
-__syncthreads();
 }
 
 
