@@ -47,7 +47,7 @@ if (atomicCAS(globalBarr, numBarr, 0) == numBarr) {
 __threadfence();
 *global_sense = *sense;
 printf("Global sense hili with TBid %d\n", blockIdx.x);
-__threadfence();
+//__threadfence();
 }
 else { // increase backoff to avoid repeatedly hammering global barrier
 // (capped) exponential backoff
