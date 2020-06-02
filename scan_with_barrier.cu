@@ -231,6 +231,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     extern volatile __shared__ float s[];
     float *tmp1;
     float * tmp2;
+    float* tmp3;
     bool write_p = write_lasts;
     int a = n;
     int tid = threadIdx.x;
@@ -275,14 +276,16 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     if(a == n ){
       tmp1 = g_idata;
       tmp2 = g_odata;
+      tmp3 = lasts;
       g_idata = lasts;
       g_odata = lasts;
+      lasts = nullptr;
       write_p = false;
       a = (n + blockDim.x - 1) / blockDim.x;
     }
     __syncthreads();
    }
-
+     lasts = tmp3;
     g_odata = tmp2;
     if (index < n) {
         g_odata[index] = g_odata[index] + lasts[blockIdx.x];
