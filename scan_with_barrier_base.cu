@@ -71,7 +71,7 @@ __global__ void hillis_steele(float* g_odata, float* lasts,  float* g_idata, uns
     }
     __syncthreads();
    }
-
+   cg::sync(grid); 
     lasts = tmp3;
     g_odata = tmp2;
     __syncthreads();
