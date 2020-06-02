@@ -45,8 +45,9 @@ proceed because all of the TBs have reached the global barrier.
 if (atomicCAS(globalBarr, numBarr, 0) == numBarr) {
 // atomicCAS acts as a load acquire, need TF to enforce ordering
 __threadfence();
-*global_sense = *sense;
 printf("Global sense hili with TBid %d\n", blockIdx.x);
+*global_sense = *sense;
+
 //__threadfence();
 }
 else { // increase backoff to avoid repeatedly hammering global barrier
