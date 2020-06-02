@@ -34,7 +34,7 @@ while (*global_sense != *sense)
 {
 if (isMasterThread)
 {
-    //printf("Spinning with TBid %d\n", blockIdx.x);
+    printf("Spinning with TBid %d\n", blockIdx.x);
 /*
 For the tree barrier we expect only 1 TB from each SM to enter the
 global barrier.  Since we are assuming an equal amount of work for all
