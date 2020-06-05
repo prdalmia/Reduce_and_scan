@@ -64,11 +64,12 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
-    cudaEventRecord(start);
+    
 
     void *kernelArgs[] = {
         (void *)&a,  (void *)&b, (void *)&N, (void *)&output 
     };
+    cudaEventRecord(start);
       cudaLaunchCooperativeKernel((void*)reduce_kernel, ((N + threads_per_block - 1) / threads_per_block), threads_per_block,  kernelArgs, threads_per_block * sizeof(int), 0);
     cudaEventRecord(stop);
     cudaDeviceSynchronize();
