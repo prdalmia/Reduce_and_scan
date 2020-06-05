@@ -267,7 +267,7 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
     if (tid == 0) {
         g_odata[blockIdx.x] = sdata[0];
     }
-    //hi this is preyesh
+    __syncthreads();
  kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);     
     int* tmp = g_idata;
     g_idata = g_odata;
