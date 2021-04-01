@@ -75,7 +75,8 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaDeviceSynchronize();
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
-    std::cout << "time cuda only(ms) " << ms << std::endl;
+    //std::cout << "time cuda only(ms) " << ms << std::endl;
+    printf("time cuda only(ms) is %f\n", ms) ;
     int sum = *output;
 
     cudaFree(a);
