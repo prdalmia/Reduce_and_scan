@@ -94,11 +94,11 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   const int numTBs_perSM,
   const bool isMasterThread) {         
     if(isMasterThread) {
-        perSMsense[smID] = !(*global_sense);
+        perSMsense[blockIdx.x] = !(*global_sense);
       }
       __syncthreads();
                             
-  cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense[smID], global_sense);
+  cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense[blockIdx.x], global_sense);
   }
   
   
@@ -183,13 +183,13 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaGetDeviceProperties(&deviceProp, 0);
     int NUM_SM = deviceProp.multiProcessorCount;
     cudaMallocManaged((void **)&global_sense,sizeof(bool));
-    cudaMallocManaged((void **)&perSMsense,NUM_SM*sizeof(bool));
+    cudaMallocManaged((void **)&perSMsense,((N + threads_per_block - 1) / threads_per_block)) *sizeof(bool));
     cudaMallocManaged((void **)&global_count,sizeof(unsigned int));
     
     cudaMemset(global_sense, false, sizeof(bool));
     cudaMemset(global_count, 0, sizeof(unsigned int));
 
-    for (int i = 0; i < NUM_SM; ++i) {
+    for (int i = 0; i < ((N + threads_per_block - 1) / threads_per_block)); ++i) {
        cudaMemset(&perSMsense[i], false, sizeof(bool));
      }
     cudaMemcpy(a, arr, N * sizeof(int), cudaMemcpyHostToDevice);
