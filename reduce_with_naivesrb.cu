@@ -114,8 +114,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   (threadIdx.z == 0));
   // represents the number of TBs going to the barrier (max NUM_SM, gridDim.x if
   // fewer TBs than SMs).
-  const unsigned int numBlocksAtBarr = ((gridDim.x < NUM_SM) ? gridDim.x :
-  NUM_SM);
+  const unsigned int numBlocksAtBarr = gridDim.x;
   const int smID = (blockIdx.x % numBlocksAtBarr); // mod by # SMs to get SM ID
   
   // all thread blocks on the same SM access unique locations because the
