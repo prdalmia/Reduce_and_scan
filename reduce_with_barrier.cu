@@ -148,9 +148,9 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   /*
   Helper function for joining the barrier with the atomic tree barrier.
   */
-  __device__ void joinBarrier_helperSRB(bool volatile* global_sense,
-  bool volatile * perSMsense,
-  bool volatile * done,
+  __device__ void joinBarrier_helperSRB(bool * volatile global_sense,
+  bool * volatile perSMsense,
+  bool * volatile done,
   unsigned int* global_count,
   unsigned int* local_count,
   const unsigned int numBlocksAtBarr,
@@ -182,7 +182,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   
   __syncthreads();
   }    
-  } else { // if only 1 TB on the SM, no need for the local barriers
+  else { // if only 1 TB on the SM, no need for the local barriers
   cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense[smID], global_sense);
   }
   }
