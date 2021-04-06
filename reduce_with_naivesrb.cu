@@ -130,7 +130,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   
   joinBarrier_helperNaiveSRB(global_sense, perSMsense, global_count, numBlocksAtBarr, smID, perSM_blockID, numTBs_perSM,
   isMasterThread);
-
+  }
 __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output, bool * global_sense,
     bool * perSMsense,
     unsigned int* global_count,
