@@ -89,7 +89,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   __syncthreads();
   
-  cudaBarrierAtomicSubSRB(barrierBuffers, numBarr, backoff, isMasterThread, &s, global_sense);
+  cudaBarrierAtomicSubSRB(barrierBuffers, numBarr, backoff, isMasterThread, sense , global_sense);
   }
   
   
