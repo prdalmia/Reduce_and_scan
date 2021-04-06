@@ -94,6 +94,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   const bool isMasterThread) {         
     if(isMasterThread) {
         perSMsense[blockIdx.x] = !(*global_sense);
+        __threadfence();
       }
       __syncthreads();
                             
