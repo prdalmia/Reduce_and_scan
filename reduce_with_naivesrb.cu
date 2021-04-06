@@ -4,6 +4,16 @@
 #include <cuda.h>
 #include <stdio.h>
 #include "reduce.cuh"
+__device__ __forceinline__ bool ld_gbl_cg (const bool *addr)
+{
+    short t;
+#if defined(__LP64__) || defined(_WIN64)
+    asm ("ld.global.cg.u8 %0, [%1];" : "=h"(t) : "l"(addr));
+#else
+    asm ("ld.global.cg.u8 %0, [%1];" : "=h"(t) : "r"(addr));
+#endif
+    return (bool)t;
+}
 
 inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
     // numBarr represents the number of
@@ -27,7 +37,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   __syncthreads();
   
-  while (*global_sense != *sense)
+  while (ld_gbl_cg(global_sense) != *sense)
   {
   if (isMasterThread)
   {
@@ -53,7 +63,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   
   // do exponential backoff to reduce the number of times we pound the global
   // barrier
-    if (*global_sense != *sense) {
+    if (ld_gbl_cg(global_sense) != *sense) {
     for (int i = 0; i < backoff; ++i) { ; }
     }
     __syncthreads();
