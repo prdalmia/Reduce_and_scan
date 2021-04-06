@@ -53,14 +53,13 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   
   // do exponential backoff to reduce the number of times we pound the global
   // barrier
-  if(isMasterThread){
-    //if (*global_sense != *sense) {
+    if (*global_sense != *sense) {
     for (int i = 0; i < backoff; ++i) { ; }
     }
     __syncthreads();
     //}
     }
-    }
+}
   
   inline __device__ void cudaBarrierAtomicSRB(unsigned int * barrierBuffers,
   // numBarr represents the number of
