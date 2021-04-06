@@ -24,9 +24,13 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
     bool * volatile sense,
     bool * volatile global_sense)
   {
+
+    __shared__ bool s;
   __syncthreads();
   if (isMasterThread)
   {
+    
+    s = !(ld_gbl_cg(global_sense));
   //printf("Inside global Barrier for blockID %d and sense is %d and global sense is %d\n", blockIdx.x, *sense, *global_sense);
   // atomicInc acts as a store release, need TF to enforce ordering
   __threadfence();
@@ -36,7 +40,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   __syncthreads();
   
-  while (ld_gbl_cg(global_sense) != *sense)
+  while (ld_gbl_cg(global_sense) != s)
   {
   if (isMasterThread)
   {
@@ -51,7 +55,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   if (atomicCAS(globalBarr, numBarr, 0) == numBarr) {
   // atomicCAS acts as a load acquire, need TF to enforce ordering
   __threadfence();
-  *global_sense = *sense;
+  *global_sense = s;
   }
   else { // increase backoff to avoid repeatedly hammering global barrier
   // (capped) exponential backoff
@@ -62,7 +66,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   
   // do exponential backoff to reduce the number of times we pound the global
   // barrier
-    if (ld_gbl_cg(global_sense) != *sense) {
+    if (ld_gbl_cg(global_sense) != s) {
     for (int i = 0; i < backoff; ++i) { ; }
     }
     __syncthreads();
@@ -85,7 +89,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   __syncthreads();
   
-  cudaBarrierAtomicSubSRB(barrierBuffers, numBarr, backoff, isMasterThread, sense, global_sense);
+  cudaBarrierAtomicSubSRB(barrierBuffers, numBarr, backoff, isMasterThread, &s, global_sense);
   }
   
   
@@ -101,12 +105,13 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   const int perSM_blockID,
   const int numTBs_perSM,
   const bool isMasterThread) {         
+ /*
     if(isMasterThread) {
         perSMsense[blockIdx.x] = !(*global_sense);
         __threadfence();
       }
       __syncthreads();
-                            
+   */                         
   cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense[blockIdx.x], global_sense);
   }
   
