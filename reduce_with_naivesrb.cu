@@ -33,7 +33,6 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   // atomicInc effectively adds 1 to atomic for each TB that's part of the
   // global barrier.
   atomicInc(globalBarr, 0x7FFFFFFF);
-  printf("Global barr is %d and numBarr is %d\n", *globalBarr, numBarr);
   }
   __syncthreads();
   
