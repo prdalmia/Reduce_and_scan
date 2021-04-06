@@ -176,7 +176,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
     if(isMasterThread){
       while(ld_gbl_cg(done)) {;}
       __threadfence();
-      while(ld_gbl_cg(global_sense) != ld_gbl_cg(sense)) {;}
+      while(ld_gbl_cg(global_sense) != ld_gbl_cg(&perSMsense[smID])) {;}
     }
   }
   
@@ -300,7 +300,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaMallocManaged(&output, sizeof(int));
     cudaDeviceProp deviceProp;
     cudaGetDeviceProperties(&deviceProp, 0);
-    NUM_SM = deviceProp.multiProcessorCount;
+    int NUM_SM = deviceProp.multiProcessorCount;
     cudaMallocManaged((void **)&global_sense,sizeof(bool));
     cudaMallocManaged((void **)&done,sizeof(bool));
     cudaMallocManaged((void **)&perSMsense,NUM_SM*sizeof(bool));
