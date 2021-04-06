@@ -4,6 +4,16 @@
 #include <cuda.h>
 #include <stdio.h>
 #include "reduce.cuh"
+__device__ __forceinline__ bool ld_gbl_cg (const bool *addr)
+{
+    short t;
+#if defined(__LP64__) || defined(_WIN64)
+    asm ("ld.global.cg.u8 %0, [%1];" : "=h"(t) : "l"(addr));
+#else
+    asm ("ld.global.cg.u8 %0, [%1];" : "=h"(t) : "r"(addr));
+#endif
+    return (bool)t;
+}
 
 inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
     // numBarr represents the number of
@@ -53,14 +63,12 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   
   // do exponential backoff to reduce the number of times we pound the global
   // barrier
-  if(isMasterThread){
-  //if (*global_sense != *sense) {
+  if (*global_sense != *sense) {
   for (int i = 0; i < backoff; ++i) { ; }
-  }
   __syncthreads();
-  //}
   }
   }
+} 
   
   inline __device__ void cudaBarrierAtomicSRB(unsigned int * barrierBuffers,
   // numBarr represents the number of
@@ -83,9 +91,8 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   inline __device__ void cudaBarrierAtomicSubLocalSRB(unsigned int * perSMBarr,
          const unsigned int numTBs_thisSM,
          const bool isMasterThread,
-         bool * sense,
-         const int smID,
-         unsigned int* last_block)
+         bool * volatile sense,
+         const int smID)
   
   {
   __syncthreads();
@@ -120,7 +127,6 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   // locally
   __threadfence_block();
   *sense = s;
-  *last_block = blockIdx.x;
   }
   }
   __syncthreads();
@@ -129,45 +135,49 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   
   //Implements PerSM sense reversing barrier
   inline __device__ void cudaBarrierAtomicLocalSRB(unsigned int * perSMBarrierBuffers,
-               unsigned int * last_block,
                const unsigned int smID,
                const unsigned int numTBs_thisSM,
                const bool isMasterThread,
-               bool* sense)
+               bool* volatile sense)
   {
   // each SM has MAX_BLOCKS locations in barrierBuffers, so my SM's locations
   // start at barrierBuffers[smID*MAX_BLOCKS]
-  cudaBarrierAtomicSubLocalSRB(perSMBarrierBuffers, numTBs_thisSM, isMasterThread, sense, smID, last_block);
+  cudaBarrierAtomicSubLocalSRB(perSMBarrierBuffers, numTBs_thisSM, isMasterThread, sense, smID);
   }
   
   /*
   Helper function for joining the barrier with the atomic tree barrier.
   */
-  __device__ void joinBarrier_helperSRB(bool * global_sense,
-  bool * perSMsense,
-  bool * done,
+  __device__ void joinBarrier_helperSRB(bool volatile* global_sense,
+  bool volatile * perSMsense,
+  bool volatile * done,
   unsigned int* global_count,
   unsigned int* local_count,
-  unsigned int* last_block,
   const unsigned int numBlocksAtBarr,
   const int smID,
   const int perSM_blockID,
   const int numTBs_perSM,
   const bool isMasterThread) {                                 
-  __syncthreads();
+  *done = 0;
+    __syncthreads();
   if (numTBs_perSM > 1) {
-  cudaBarrierAtomicLocalSRB(&local_count[smID], &last_block[smID], smID, numTBs_perSM, isMasterThread, &perSMsense[smID]);
+  cudaBarrierAtomicLocalSRB(&local_count[smID], smID, numTBs_perSM, isMasterThread, &perSMsense[smID]);
   
   // only 1 TB per SM needs to do the global barrier since we synchronized
   // the TBs locally first
-  if (blockIdx.x == last_block[smID]) {
-  cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread , &perSMsense[smID], global_sense);  
+  if (perSM_blockID == 0) {
+  cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread , &perSMsense[smID], global_sense);
+  if(isMasterThread){
+    *done = 1;
+  }
+  __syncthreads();  
   }
   else {
-  if(isMasterThread){
-  while (*global_sense != perSMsense[smID]){  
-  __threadfence();
-  }
+    if(isMasterThread){
+      while(ld_gbl_cg(done)) {;}
+      __threadfence();
+      while(ld_gbl_cg(global_sense) != ld_gbl_cg(sense)) {;}
+    }
   }
   
   __syncthreads();
@@ -178,12 +188,11 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   
   
-  __device__ void kernelAtomicTreeBarrierUniqSRB( bool * global_sense,
-  bool * perSMsense,
-  bool * done,
+  __device__ void kernelAtomicTreeBarrierUniqSRB( bool * volatile global_sense,
+  bool * volatile perSMsense,
+  bool * volatile done,
   unsigned int* global_count,
   unsigned int* local_count,
-  unsigned int* last_block,
   const int NUM_SM)
   {
   
@@ -206,7 +215,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   int numTBs_perSM = (int)ceil((float)gridDim.x / numBlocksAtBarr);
   
   
-  joinBarrier_helperSRB(global_sense, perSMsense, done, global_count, local_count, last_block,
+  joinBarrier_helperSRB(global_sense, perSMsense, done, global_count, local_count,
   numBlocksAtBarr, smID, perSM_blockID, numTBs_perSM,
   isMasterThread);
   /*
@@ -235,12 +244,11 @@ __device__ void __gpu_sync(int blocks_to_synch)
     __syncthreads();
 }
 */
-__global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output, bool * global_sense,
-    bool * perSMsense,
-    bool * done,
+__global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output, bool * volatile global_sense,
+    bool * volatile perSMsense,
+    bool * volatile done,
     unsigned int* global_count,
     unsigned int* local_count,
-    unsigned int* last_block,
     const int NUM_SM) {
     extern __shared__ int sdata[];
   
@@ -268,7 +276,7 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
         g_odata[blockIdx.x] = sdata[0];
     }
     __syncthreads();
- kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);     
+ kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, NUM_SM);     
     int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
@@ -284,18 +292,18 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     int * output;
     unsigned int* global_count;
     unsigned int* local_count; 
-    unsigned int *last_block;
-    bool * global_sense;
-    bool* perSMsense;
-    bool * done;
+    bool* volatile global_sense;
+    bool* volatile perSMsense;
+    bool * volatile done;
     cudaMallocManaged(&a, N * sizeof(int));
     cudaMallocManaged(&b, N * sizeof(int));
     cudaMallocManaged(&output, sizeof(int));
-    int NUM_SM = 80;
+    cudaDeviceProp deviceProp;
+    cudaGetDeviceProperties(&deviceProp, 0);
+    NUM_SM = deviceProp.multiProcessorCount;
     cudaMallocManaged((void **)&global_sense,sizeof(bool));
     cudaMallocManaged((void **)&done,sizeof(bool));
     cudaMallocManaged((void **)&perSMsense,NUM_SM*sizeof(bool));
-    cudaMallocManaged((void **)&last_block,sizeof(unsigned int)*(NUM_SM));
     cudaMallocManaged((void **)&local_count,  NUM_SM*sizeof(unsigned int));
     cudaMallocManaged((void **)&global_count,sizeof(unsigned int));
     
@@ -306,7 +314,6 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     for (int i = 0; i < NUM_SM; ++i) {
        cudaMemset(&perSMsense[i], false, sizeof(bool));
        cudaMemset(&local_count[i], 0, sizeof(unsigned int));
-       cudaMemset(&last_block[i], 0, sizeof(unsigned int));
      }
     cudaMemcpy(a, arr, N * sizeof(int), cudaMemcpyHostToDevice);
     cudaEvent_t start;
@@ -317,7 +324,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaEventRecord(start);
     //for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
         reduce_kernel<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
-                        threads_per_block * sizeof(int)>>>(a, b, N, output, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
+                        threads_per_block * sizeof(int)>>>(a, b, N, output, global_sense, perSMsense, done, global_count, local_count, NUM_SM);
 
         // Swap input and output arrays
         //int* tmp = a;
