@@ -23,7 +23,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   // atomicInc effectively adds 1 to atomic for each TB that's part of the
   // global barrier.
   atomicInc(globalBarr, 0x7FFFFFFF);
-  printf("Global barr is %d\n", *globalBarr);
+  printf("Global barr is %d and numBarr is %d\n", *globalBarr, numBarr);
   }
   __syncthreads();
   
@@ -208,7 +208,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
         //a = b;
         //b = tmp;
    // }
-   cudaEventRecord(stop);
+    cudaEventRecord(stop);
     cudaDeviceSynchronize();
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
