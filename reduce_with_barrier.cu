@@ -45,7 +45,7 @@ __threadfence();
 *global_sense = s;
 } else { // increase backoff to avoid repeatedly hammering global barrier
 // (capped) exponential backoff
-backoff = (((backoff << 1) + 1) & (MAX_BACKOFF - 1));
+backoff = (((backoff << 1) + 1) & (1024 - 1));
 }
 }
 __syncthreads();
@@ -230,6 +230,10 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   __syncthreads();
   }    
   } else { // if only 1 TB on the SM, no need for the local barriers
+    if (isMasterThread) {
+      backoff = 1;
+    }
+    __syncthreads();
   cudaBarrierAtomicNaiveSRB(global_count, gridDim.x, backoff,  isMasterThread,  global_sense);
   }
   }
@@ -379,7 +383,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaEventRecord(start);
     //for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
         reduce_kernel<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
-                        threads_per_block * sizeof(int)>>>(a, b, N, output, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM);
+                        threads_per_block * sizeof(int)>>>(a, b, N, output, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM, naive);
 
         // Swap input and output arrays
         //int* tmp = a;
