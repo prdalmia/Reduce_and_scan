@@ -30,6 +30,7 @@ __threadfence_block();
 // atomicInc effectively adds 1 to atomic for each TB that's part of the
 // global barrier.
 atomicInc(globalBarr, 0x7FFFFFFF);
+ printf("Global barr is %d and numbarr is %d\n", *globalBarr, numBarr);
 }
 __syncthreads();
 
@@ -235,7 +236,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
       backoff = 1;
     }
     __syncthreads();
-  cudaBarrierAtomicNaiveSRB(global_count, numBlocksAtBarr*numTBs_perSM, backoff,  isMasterThread,  global_sense);
+  cudaBarrierAtomicNaiveSRB(global_count, (numBlocksAtBarr*numTBs_perSM), backoff,  isMasterThread,  global_sense);
   }
   }
   
