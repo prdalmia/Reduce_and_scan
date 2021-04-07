@@ -230,6 +230,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   __syncthreads();
   }    
   } else { // if only 1 TB on the SM, no need for the local barriers
+    __shared__ int backoff;
     if (isMasterThread) {
       backoff = 1;
     }
