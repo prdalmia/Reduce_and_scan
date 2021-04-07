@@ -26,7 +26,7 @@ __syncthreads();
 __shared__ bool s;
 if (isMasterThread) {
 s = !(ld_gbl_cg(global_sense));
-__threadfence_block();
+__threadfence();
 // atomicInc effectively adds 1 to atomic for each TB that's part of the
 // global barrier.
 atomicInc(globalBarr, 0x7FFFFFFF);
