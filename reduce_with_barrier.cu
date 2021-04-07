@@ -69,6 +69,52 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   }
 } 
+
+inline __device__ void cudaBarrierAtomicNaiveSRB(unsigned int *globalBarr,
+  // numBarr represents the number
+  // of TBs going to the barrier
+  const unsigned int numBarr,
+  int backoff,
+  const bool isMasterThread,
+  bool *volatile global_sense) {
+__syncthreads();
+__shared__ bool s;
+if (isMasterThread) {
+s = !(ld_gbl_cg(global_sense));
+__threadfence_block();
+// atomicInc effectively adds 1 to atomic for each TB that's part of the
+// global barrier.
+atomicInc(globalBarr, 0x7FFFFFFF);
+}
+__syncthreads();
+
+while (ld_gbl_cg(global_sense) != s) {
+if (isMasterThread) {
+/*
+Once the atomic's value == numBarr, then reset the value to 0 and
+proceed because all of the TBs have reached the global barrier.
+*/
+if (atomicCAS(globalBarr, numBarr, 0) == numBarr) {
+// atomicCAS acts as a load acquire, need TF to enforce ordering
+__threadfence();
+*global_sense = s;
+} else { // increase backoff to avoid repeatedly hammering global barrier
+// (capped) exponential backoff
+backoff = (((backoff << 1) + 1) & (MAX_BACKOFF - 1));
+}
+}
+__syncthreads();
+
+// do exponential backoff to reduce the number of times we pound the global
+// barrier
+if (ld_gbl_cg(global_sense) != s) {
+for (int i = 0; i < backoff; ++i) {
+;
+}
+__syncthreads();
+}
+}
+}
   
   inline __device__ void cudaBarrierAtomicSRB(unsigned int * barrierBuffers,
   // numBarr represents the number of
@@ -157,10 +203,11 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   const int smID,
   const int perSM_blockID,
   const int numTBs_perSM,
-  const bool isMasterThread) {                                 
+  const bool isMasterThread,
+  int naive ) {                                 
   *done = 0;
     __syncthreads();
-  if (numTBs_perSM > 1) {
+  if (numTBs_perSM > 4 && !naive) {
   cudaBarrierAtomicLocalSRB(&local_count[smID], smID, numTBs_perSM, isMasterThread, &perSMsense[smID]);
   
   // only 1 TB per SM needs to do the global barrier since we synchronized
@@ -181,7 +228,12 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   __syncthreads();
   }    
   else { // if only 1 TB on the SM, no need for the local barriers
-  cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread,  &perSMsense[smID], global_sense);
+    __shared__ int backoff;
+  if (isMasterThread) {
+    backoff = 1;
+  }
+  __syncthreads();
+  cudaBarrierAtomicNaiveSRB(global_count, numBlocksAtBarr, backoff, isMasterThread,  global_sense);
   }
   }
   
@@ -191,7 +243,8 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   bool * volatile done,
   unsigned int* global_count,
   unsigned int* local_count,
-  const int NUM_SM)
+  const int NUM_SM,
+  int naive )
   {
   
   // local variables
@@ -200,7 +253,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   (threadIdx.z == 0));
   // represents the number of TBs going to the barrier (max NUM_SM, gridDim.x if
   // fewer TBs than SMs).
-  const unsigned int numBlocksAtBarr = ((gridDim.x < NUM_SM) ? gridDim.x :
+  const unsigned int numBlocksAtBarr = (naive) ? gridDim.x : ((gridDim.x < NUM_SM) ? gridDim.x :
   NUM_SM);
   const int smID = (blockIdx.x % numBlocksAtBarr); // mod by # SMs to get SM ID
   
@@ -215,7 +268,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   
   joinBarrier_helperSRB(global_sense, perSMsense, done, global_count, local_count,
   numBlocksAtBarr, smID, perSM_blockID, numTBs_perSM,
-  isMasterThread);
+  isMasterThread, naive);
   /*
   if(isMasterThread && blockIdx.x == 0){
     *done =0;
@@ -247,7 +300,8 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
     bool * volatile done,
     unsigned int* global_count,
     unsigned int* local_count,
-    const int NUM_SM) {
+    const int NUM_SM,
+    int naive) {
     extern __shared__ int sdata[];
   
     unsigned int tid = threadIdx.x;
@@ -274,7 +328,7 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
         g_odata[blockIdx.x] = sdata[0];
     }
     __syncthreads();
- kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, NUM_SM);     
+ kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, NUM_SM, naive);     
     int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
@@ -288,6 +342,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     int* a;
     int* b;
     int * output;
+    int naive = 0;
     unsigned int* global_count;
     unsigned int* local_count; 
     bool* volatile global_sense;
@@ -322,7 +377,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaEventRecord(start);
     //for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
         reduce_kernel<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
-                        threads_per_block * sizeof(int)>>>(a, b, N, output, global_sense, perSMsense, done, global_count, local_count, NUM_SM);
+                        threads_per_block * sizeof(int)>>>(a, b, N, output, global_sense, perSMsense, done, global_count, local_count, NUM_SM, naive);
 
         // Swap input and output arrays
         //int* tmp = a;
