@@ -100,7 +100,7 @@ __threadfence();
 *global_sense = s;
 } else { // increase backoff to avoid repeatedly hammering global barrier
 // (capped) exponential backoff
-backoff = (((backoff << 1) + 1) & (MAX_BACKOFF - 1));
+backoff = (((backoff << 1) + 1) & (64 - 1));
 }
 }
 __syncthreads();
@@ -221,7 +221,7 @@ __syncthreads();
   }
   else {
     if(isMasterThread){
-      while(*global_sense) != *sense)) { __threadfence();}
+      while(*global_sense != *sense) { __threadfence();}
     }
   }
   
