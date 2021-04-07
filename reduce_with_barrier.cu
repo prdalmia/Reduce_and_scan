@@ -221,7 +221,7 @@ __syncthreads();
   }
   else {
     if(isMasterThread){
-      while(*global_sense != *sense) { __threadfence();}
+      while(*global_sense != perSMsense[smID]) { __threadfence();}
     }
   }
   
