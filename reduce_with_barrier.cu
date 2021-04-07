@@ -21,7 +21,7 @@ inline __device__ void cudaBarrierAtomicNaiveSRB(unsigned int *globalBarr,
   const unsigned int numBarr,
   int backoff,
   const bool isMasterThread,
-  bool *volatile global_sense) {
+  bool * volatile global_sense) {
 __syncthreads();
 __shared__ bool s;
 if (isMasterThread) {
@@ -199,7 +199,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   /*
   Helper function for joining the barrier with the atomic tree barrier.
   */
-  __device__ void joinBarrier_helperSRB(bool * global_sense,
+  __device__ void joinBarrier_helperSRB(bool * volatile global_sense,
   bool * perSMsense,
   bool * done,
   unsigned int* global_count,
@@ -235,12 +235,12 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
       backoff = 1;
     }
     __syncthreads();
-  cudaBarrierAtomicNaiveSRB(global_count, gridDim.x, backoff,  isMasterThread,  global_sense);
+  cudaBarrierAtomicNaiveSRB(global_count, numBlocksAtBarr*numTBs_perSM, backoff,  isMasterThread,  global_sense);
   }
   }
   
   
-  __device__ void kernelAtomicTreeBarrierUniqSRB( bool * global_sense,
+  __device__ void kernelAtomicTreeBarrierUniqSRB( bool * volatile global_sense,
   bool * perSMsense,
   bool * done,
   unsigned int* global_count,
@@ -298,7 +298,7 @@ __device__ void __gpu_sync(int blocks_to_synch)
     __syncthreads();
 }
 */
-__global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output, bool * global_sense,
+__global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output, bool * volatile global_sense,
     bool * perSMsense,
     bool * done,
     unsigned int* global_count,
@@ -349,7 +349,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     unsigned int* global_count;
     unsigned int* local_count; 
     unsigned int *last_block;
-    bool * global_sense;
+    bool * volatile global_sense;
     bool* perSMsense;
     bool * done;
     cudaMallocManaged(&a, N * sizeof(int));
