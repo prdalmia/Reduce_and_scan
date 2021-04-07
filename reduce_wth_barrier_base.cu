@@ -33,7 +33,7 @@ namespace cg = cooperative_groups;
         g_odata[blockIdx.x] = sdata[0];
     }
     
-  // __syncthreads();
+   __syncthreads();
 
     cg::grid_group grid = cg::this_grid(); 
     grid.sync();
