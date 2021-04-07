@@ -359,7 +359,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaDeviceProp deviceProp;
     cudaGetDeviceProperties(&deviceProp, 0);
     int NUM_SM = deviceProp.multiProcessorCount;
-    bool naive = true;
+    bool naive = false;
     cudaMallocManaged((void **)&global_sense,sizeof(bool));
     cudaMallocManaged((void **)&done,sizeof(bool));
     cudaMallocManaged((void **)&perSMsense,NUM_SM*sizeof(bool));
