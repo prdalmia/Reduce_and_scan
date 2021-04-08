@@ -103,7 +103,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   else { // increase backoff to avoid repeatedly hammering global barrier
   // (capped) exponential backoff
-  backoff = (((backoff << 1) + 1) & (64-1));
+  backoff = (((backoff << 1) + 1) & (1024-1));
   }
   }
   __syncthreads();
@@ -112,7 +112,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   // barrier
   if(isMasterThread){
   //if (*global_sense != *sense) {
-  for (int i = 0; i < backoff; ++i) { ; }
+  //for (int i = 0; i < backoff; ++i) { ; }
   }
   __syncthreads();
   //}
@@ -200,7 +200,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   /*
   Helper function for joining the barrier with the atomic tree barrier.
   */
-  __device__ void joinBarrier_helperSRB(bool * volatile global_sense,
+  __device__ void joinBarrier_helperSRB(bool * global_sense,
   bool * perSMsense,
   bool * done,
   unsigned int* global_count,
@@ -211,14 +211,17 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   const int perSM_blockID,
   const int numTBs_perSM,
   const bool isMasterThread,
-  bool naive ) {                                 
+  bool naive) {                                 
   __syncthreads();
-  if (numTBs_perSM > 1 && !naive) {
+  if (numTBs_perSM > 1 && naive == false) {
   cudaBarrierAtomicLocalSRB(&local_count[smID], &last_block[smID], smID, numTBs_perSM, isMasterThread, &perSMsense[smID]);
   
   // only 1 TB per SM needs to do the global barrier since we synchronized
   // the TBs locally first
   if (blockIdx.x == last_block[smID]) {
+    if(isMasterThread && perSM_blockID == 0){    
+    }
+    __syncthreads();
   cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread , &perSMsense[smID], global_sense);  
   }
   else {
@@ -241,7 +244,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   
   
-  __device__ void kernelAtomicTreeBarrierUniqSRB( bool * volatile global_sense,
+  __device__ void kernelAtomicTreeBarrierUniqSRB( bool * global_sense,
   bool * perSMsense,
   bool * done,
   unsigned int* global_count,
