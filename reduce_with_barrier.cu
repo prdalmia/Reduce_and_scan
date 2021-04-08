@@ -200,7 +200,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   /*
   Helper function for joining the barrier with the atomic tree barrier.
   */
-  __device__ void joinBarrier_helperSRB(bool * global_sense,
+  __device__ void joinBarrier_helperSRB(bool * volatile global_sense,
   bool * perSMsense,
   bool * done,
   unsigned int* global_count,
@@ -226,7 +226,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   else {
   if(isMasterThread){
-  while (ld_gbl_cg(global_sense) != perSMsense[smID]){  
+  while (ld_gbl_cg(global_sense) != ld_gbl_cg(&perSMsense[smID])){  
   __threadfence();
   }
   }
@@ -244,7 +244,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   
   
-  __device__ void kernelAtomicTreeBarrierUniqSRB( bool * global_sense,
+  __device__ void kernelAtomicTreeBarrierUniqSRB( bool * volatile global_sense,
   bool * perSMsense,
   bool * done,
   unsigned int* global_count,
