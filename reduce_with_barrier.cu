@@ -80,7 +80,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   // atomicInc effectively adds 1 to atomic for each TB that's part of the
   // global barrier.
   atomicInc(globalBarr, 0x7FFFFFFF);
-  //printf("Global barr is %d\n", *globalBarr);
+  printf("Global barr is %d and numBarr is %d\n", *globalBarr, numBarr);
   }
   __syncthreads();
   
@@ -88,7 +88,6 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   {
   if (isMasterThread)
   {
-  printf("Global sense hili\n");
   /*
   For the tree barrier we expect only 1 TB from each SM to enter the
   global barrier.  Since we are assuming an equal amount of work for all
