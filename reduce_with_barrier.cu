@@ -226,7 +226,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   else {
   if(isMasterThread){
-  while (*global_sense != perSMsense[smID]){  
+  while (ld_gbl_cg(global_sense) != perSMsense[smID]){  
   __threadfence();
   }
   }
