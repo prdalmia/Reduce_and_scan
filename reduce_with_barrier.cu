@@ -103,7 +103,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   else { // increase backoff to avoid repeatedly hammering global barrier
   // (capped) exponential backoff
-  backoff = (((backoff << 1) + 1) & (1024-1));
+  backoff = (((backoff << 1) + 1) & (64-1));
   }
   }
   __syncthreads();
