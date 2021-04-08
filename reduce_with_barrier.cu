@@ -210,7 +210,8 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   const int perSM_blockID,
   const int numTBs_perSM,
   const bool isMasterThread,
-  bool naive) {                                 
+  bool naive) {
+      *done = 0;                                 
   __syncthreads();
   if (numTBs_perSM > 1 && naive == false) {
   cudaBarrierAtomicLocalSRB(&local_count[smID], &last_block[smID], smID, numTBs_perSM, isMasterThread, &perSMsense[smID]);
@@ -218,13 +219,16 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   // only 1 TB per SM needs to do the global barrier since we synchronized
   // the TBs locally first
   if (blockIdx.x == last_block[smID]) {
-    if(isMasterThread && perSM_blockID == 0){    
-    }
-    __syncthreads();
-  cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread , &perSMsense[smID], global_sense);  
+  cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread , &perSMsense[smID], global_sense);
+  if(isMasterThread){
+  *done = 1;  
+  }
+  __syncthreads();
   }
   else {
   if(isMasterThread){
+  while(ld_gbl_cg(done) != 1){;}
+  __threadfence();    
   while (ld_gbl_cg(global_sense) != ld_gbl_cg(&perSMsense[smID])){  
   __threadfence();
   }
