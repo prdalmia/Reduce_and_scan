@@ -99,6 +99,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   // atomicCAS acts as a load acquire, need TF to enforce ordering
   __threadfence();
   *global_sense = *sense;
+  __threadfence();
   }
   else { // increase backoff to avoid repeatedly hammering global barrier
   // (capped) exponential backoff
