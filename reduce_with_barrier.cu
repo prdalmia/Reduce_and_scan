@@ -139,7 +139,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   inline __device__ void cudaBarrierAtomicSubLocalSRB(unsigned int * perSMBarr,
          const unsigned int numTBs_thisSM,
          const bool isMasterThread,
-         bool * sense,
+         bool * volatile sense,
          const int smID,
          unsigned int* last_block)
   
@@ -189,7 +189,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
                const unsigned int smID,
                const unsigned int numTBs_thisSM,
                const bool isMasterThread,
-               bool* sense)
+               bool* volatile sense)
   {
   // each SM has MAX_BLOCKS locations in barrierBuffers, so my SM's locations
   // start at barrierBuffers[smID*MAX_BLOCKS]
@@ -199,9 +199,9 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   /*
   Helper function for joining the barrier with the atomic tree barrier.
   */
-  __device__ void joinBarrier_helperSRB(bool * global_sense,
-  bool * perSMsense,
-  bool * done,
+  __device__ void joinBarrier_helperSRB(bool * volatile global_sense,
+  bool * volatile perSMsense,
+  bool * volatile done,
   unsigned int* global_count,
   unsigned int* local_count,
   unsigned int* last_block,
@@ -247,9 +247,9 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   
   
-  __device__ void kernelAtomicTreeBarrierUniqSRB( bool *  global_sense,
-  bool * perSMsense,
-  bool * done,
+  __device__ void kernelAtomicTreeBarrierUniqSRB( bool * volatile global_sense,
+  bool * volatile perSMsense,
+  bool * volatile done,
   unsigned int* global_count,
   unsigned int* local_count,
   unsigned int* last_block,
@@ -305,9 +305,9 @@ __device__ void __gpu_sync(int blocks_to_synch)
     __syncthreads();
 }
 */
-__global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output, bool *  global_sense,
-    bool * perSMsense,
-    bool * done,
+__global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output, bool * volatile  global_sense,
+    bool * volatile perSMsense,
+    bool * volatile done,
     unsigned int* global_count,
     unsigned int* local_count,
     unsigned int* last_block,
@@ -356,9 +356,9 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     unsigned int* global_count;
     unsigned int* local_count; 
     unsigned int *last_block;
-    bool *  global_sense;
-    bool* perSMsense;
-    bool * done;
+    bool * volatile global_sense;
+    bool* volatile perSMsense;
+    bool * volatile done;
     cudaMallocManaged(&a, N * sizeof(int));
     cudaMallocManaged(&b, N * sizeof(int));
     cudaMallocManaged(&output, sizeof(int));
