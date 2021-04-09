@@ -116,7 +116,6 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   __syncthreads();
   }
   }
-  }
   
   inline __device__ void cudaBarrierAtomicSRB(unsigned int * barrierBuffers,
   // numBarr represents the number of
