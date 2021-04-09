@@ -80,11 +80,11 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   // atomicInc effectively adds 1 to atomic for each TB that's part of the
   // global barrier.
   atomicInc(globalBarr, 0x7FFFFFFF);
-  printf("Global barr is %d and numBarr is %d\n", *globalBarr, numBarr);
+  //printf("Global barr is %d and numBarr is %d\n", *globalBarr, numBarr);
   }
   __syncthreads();
   
-  while (*global_sense != *sense)
+  while (*global_sense != ld_gbl_cg(sense))
   {
   if (isMasterThread)
   {
@@ -98,12 +98,11 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   if (atomicCAS(globalBarr, numBarr, 0) == numBarr) {
   // atomicCAS acts as a load acquire, need TF to enforce ordering
   __threadfence();
-  *global_sense = *sense;
-  __threadfence();
+  *global_sense = ld_gbl_cg(sense);
   }
   else { // increase backoff to avoid repeatedly hammering global barrier
   // (capped) exponential backoff
-  backoff = (((backoff << 1) + 1) & (64-1));
+  backoff = (((backoff << 1) + 1) & (1024-1));
   }
   }
   __syncthreads();
@@ -111,7 +110,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   // do exponential backoff to reduce the number of times we pound the global
   // barrier
   if(isMasterThread){
-  if (*global_sense != *sense) {
+  //if (*global_sense != *sense) {
   //*for (int i = 0; i < backoff; ++i) { ; }
   }
   __syncthreads();
@@ -140,7 +139,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   inline __device__ void cudaBarrierAtomicSubLocalSRB(unsigned int * perSMBarr,
          const unsigned int numTBs_thisSM,
          const bool isMasterThread,
-         bool * volatile sense,
+         bool * sense,
          const int smID,
          unsigned int* last_block)
   
@@ -149,7 +148,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   __shared__ bool s;
   if (isMasterThread)
   {
-  s = !(*sense);
+  s = !(ld_gbl_cg(sense));
   // atomicInc acts as a store release, need TF to enforce ordering locally
   __threadfence_block();
   /*
@@ -161,7 +160,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   }
   __syncthreads();
   
-  while (*sense != s)
+  while (ld_gbl_cg(sense) != s)
   {
   if (isMasterThread)
   {
@@ -190,7 +189,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
                const unsigned int smID,
                const unsigned int numTBs_thisSM,
                const bool isMasterThread,
-               bool* volatile sense)
+               bool*  sense)
   {
   // each SM has MAX_BLOCKS locations in barrierBuffers, so my SM's locations
   // start at barrierBuffers[smID*MAX_BLOCKS]
@@ -202,7 +201,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   */
   __device__ void joinBarrier_helperSRB(bool * volatile global_sense,
   bool * volatile perSMsense,
-  bool * volatile done,
+  bool *  done,
   unsigned int* global_count,
   unsigned int* local_count,
   unsigned int* last_block,
@@ -212,7 +211,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   const int numTBs_perSM,
   const bool isMasterThread,
   bool naive) {
-      *done = 0;                                 
+     //*done = 0;                                 
   __syncthreads();
   if (numTBs_perSM > 1 && naive == false) {
   cudaBarrierAtomicLocalSRB(&local_count[smID], &last_block[smID], smID, numTBs_perSM, isMasterThread, &perSMsense[smID]);
@@ -221,20 +220,14 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   // the TBs locally first
   if (blockIdx.x == last_block[smID]) {
   cudaBarrierAtomicSRB(global_count, numBlocksAtBarr, isMasterThread , &perSMsense[smID], global_sense);
-  if(isMasterThread){
-  *done = 1;  
-  }
-  __syncthreads();
+ 
   }
   else {
   if(isMasterThread){
-  while(ld_gbl_cg(done) != 1){;}
-  __threadfence();    
-  while (ld_gbl_cg(global_sense) != ld_gbl_cg(&perSMsense[smID])){  
-  __threadfence();
+    while (*global_sense != ld_gbl_cg(&perSMsense[smID])){  
+        __threadfence();
   }
-  }
-  
+  } 
   __syncthreads();
   }    
   } else { // if only 1 TB on the SM, no need for the local barriers
@@ -250,7 +243,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   
   __device__ void kernelAtomicTreeBarrierUniqSRB( bool * volatile global_sense,
   bool * volatile perSMsense,
-  bool * volatile done,
+  bool * done,
   unsigned int* global_count,
   unsigned int* local_count,
   unsigned int* last_block,
@@ -280,9 +273,7 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   joinBarrier_helperSRB(global_sense, perSMsense, done, global_count, local_count, last_block,
   numBlocksAtBarr, smID, perSM_blockID, numTBs_perSM,
   isMasterThread, naive);
-  /*
-  if(isMasterThread && blockIdx.x == 0){
-    *done =0;
+ 
   }
   __syncthreads();
   */
