@@ -272,10 +272,6 @@ inline __device__ void cudaBarrierAtomicSubSRB(unsigned int * globalBarr,
   joinBarrier_helperSRB(global_sense, perSMsense, done, global_count, local_count, last_block,
   numBlocksAtBarr, smID, perSM_blockID, numTBs_perSM,
   isMasterThread, naive);
- 
-  }
-  __syncthreads();
-  */
   }
 /*
 __device__ void __gpu_sync(int blocks_to_synch)
