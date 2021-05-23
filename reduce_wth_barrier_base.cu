@@ -7,6 +7,7 @@
 namespace cg = cooperative_groups;
 
  __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output, long long int* time) {
+    long long int start = clock64(); 
     extern __shared__ int sdata[];
   
     unsigned int tid = threadIdx.x;
@@ -34,13 +35,11 @@ namespace cg = cooperative_groups;
     }
     
   // __syncthreads();
-   long long int start = clock64(); 
+   
     cg::grid_group grid = cg::this_grid(); 
     grid.sync();
-  long long int stop = clock64();
-  if(i == 0){
-  *time += (stop - start);
-  }	  
+ 
+   
     //__threadfence();
     
     int* tmp = g_idata;
@@ -50,7 +49,10 @@ namespace cg = cooperative_groups;
 
 *output = g_idata[0];
 
- 
+long long int stop = clock64();
+if(i == 0){
+    *time += (stop - start);
+    }	
 }
 
 __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_block) {
@@ -78,15 +80,12 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
         (void *)&a,  (void *)&b, (void *)&N, (void *)&output , (void *)&time
     };
     cudaEventRecord(start);
-    long long int start_o = clock64();
       cudaLaunchCooperativeKernel((void*)reduce_kernel, ((N + threads_per_block - 1) / threads_per_block), threads_per_block,  kernelArgs, threads_per_block * sizeof(int), 0);
-    long long int stop_o = clock64();
       cudaEventRecord(stop);
     cudaDeviceSynchronize();
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
     //std::cout << "time cuda only(ms) " << ms <<" barrier time is " << *time <<   std::endl;
-    long long int btime = (stop_o - start_o);
     printf("time cuda only(ms) is %f and barries time is %llu and clocrate is %llu and btime is %llu\n", ms, *time, clockrate, btime) ;
     int sum = *output;
 
