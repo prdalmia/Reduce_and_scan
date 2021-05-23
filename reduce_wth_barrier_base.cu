@@ -61,7 +61,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     long long int* time;
     cudaDeviceProp deviceProp;
     cudaGetDeviceProperties(&deviceProp, 0);
-    int clockrate = deviceProp.clockrate;
+    int clockrate = deviceProp.clockRate;
     cudaMallocManaged(&a, N * sizeof(int));
     cudaMallocManaged(&b, N * sizeof(int));
     cudaMallocManaged(&output, sizeof(int));

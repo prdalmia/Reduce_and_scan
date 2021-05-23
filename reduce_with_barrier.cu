@@ -368,7 +368,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaMallocManaged((void **)&local_count,  NUM_SM*sizeof(unsigned int));
     cudaMallocManaged((void **)&global_count,sizeof(unsigned int));
     cudaMallocManaged(&time, sizeof(long long int ));
-    int clockrate = deviceProp.clockrate;
+    int clockrate = deviceProp.clockRate;
     cudaMemset(global_sense, false, sizeof(bool));
     cudaMemset(done, false, sizeof(bool));
     cudaMemset(global_count, 0, sizeof(unsigned int));
