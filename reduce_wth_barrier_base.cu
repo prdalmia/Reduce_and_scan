@@ -59,6 +59,9 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     int* b;
     int* output;
     long long int* time;
+    cudaDeviceProp deviceProp;
+    cudaGetDeviceProperties(&deviceProp, 0);
+    int clockrate = deviceProp.clockrate;
     cudaMallocManaged(&a, N * sizeof(int));
     cudaMallocManaged(&b, N * sizeof(int));
     cudaMallocManaged(&output, sizeof(int));
@@ -81,7 +84,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
     //std::cout << "time cuda only(ms) " << ms <<" barrier time is " << *time <<   std::endl;
-    printf("time cuda only(ms) is %f and barries time is %llu\n", ms, *time) ;
+    printf("time cuda only(ms) is %f and barries time is %llu\n", ms, *time/clockrate) ;
     int sum = *output;
 
     cudaFree(a);
