@@ -78,14 +78,16 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
         (void *)&a,  (void *)&b, (void *)&N, (void *)&output , (void *)&time
     };
     cudaEventRecord(start);
+    long long int start_o = clock64();
       cudaLaunchCooperativeKernel((void*)reduce_kernel, ((N + threads_per_block - 1) / threads_per_block), threads_per_block,  kernelArgs, threads_per_block * sizeof(int), 0);
-    cudaEventRecord(stop);
+    long long int stop_o = clock64();
+      cudaEventRecord(stop);
     cudaDeviceSynchronize();
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
     //std::cout << "time cuda only(ms) " << ms <<" barrier time is " << *time <<   std::endl;
-    float btime = (float)((*time)/clockrate);
-    printf("time cuda only(ms) is %f and barries time is %llu and clocrate is %llu\n", ms, *time, clockrate) ;
+    long long int btime = (stop_0 - start_o);
+    printf("time cuda only(ms) is %f and barries time is %llu and clocrate is %llu and btime is %llu\n", ms, *time, clockrate, btime) ;
     int sum = *output;
 
     cudaFree(a);
