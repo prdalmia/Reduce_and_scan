@@ -86,7 +86,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
     //std::cout << "time cuda only(ms) " << ms <<" barrier time is " << *time <<   std::endl;
-    long long int btime = (stop_0 - start_o);
+    long long int btime = (stop_o - start_o);
     printf("time cuda only(ms) is %f and barries time is %llu and clocrate is %llu and btime is %llu\n", ms, *time, clockrate, btime) ;
     int sum = *output;
 
