@@ -301,6 +301,7 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
     const int NUM_SM,
     bool naive,
     long long int* time) {
+        long long int start = clock64();     
     extern __shared__ int sdata[];
   
     unsigned int tid = threadIdx.x;
@@ -327,18 +328,19 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
         g_odata[blockIdx.x] = sdata[0];
     }
     __syncthreads();
- long long int start = clock64(); 
+ 
  kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM, naive);     
- long long int stop = clock64();
-  if(i == 1){
-  *time += (stop - start);
-  }	 
+
 
     int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
 }
  *output = g_idata[0];
+ long long int stop = clock64();
+ if(i == 1){
+ *time += (stop - start);
+ }	 
 }
 
 
