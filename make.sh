@@ -1,0 +1,2 @@
+ nvcc -O3 -rdc=true -gencode arch=compute_70,code=compute_70 -o srb reduce_with_barrier.cu test_reduce.cu
+ nvcc -O3 -rdc=true -gencode arch=compute_70,code=compute_70 -o ccg reduce_wth_barrier_base.cu test_reduce.cu

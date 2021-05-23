@@ -333,7 +333,7 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
   if(i == 0){
   *time = (stop - start);
   }	 
-    
+
     int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
@@ -368,7 +368,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaMallocManaged((void **)&local_count,  NUM_SM*sizeof(unsigned int));
     cudaMallocManaged((void **)&global_count,sizeof(unsigned int));
     cudaMallocManaged(&time, sizeof(long long int ));
-    
+    int clockrate = deviceProp.clockrate;
     cudaMemset(global_sense, false, sizeof(bool));
     cudaMemset(done, false, sizeof(bool));
     cudaMemset(global_count, 0, sizeof(unsigned int));
@@ -398,7 +398,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaDeviceSynchronize();
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
-    printf("time cuda only(ms) is %f and barries time is %llu\n", ms, *time) ;
+    printf("time cuda only(ms) is %f and barries time is %llu and clock rate is %d\n", ms, *time/clockrate, clockrate) ;
 
     int sum = *output;
 
