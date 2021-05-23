@@ -293,7 +293,6 @@ __device__ void __gpu_sync(int blocks_to_synch)
 }
 */
 __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output, bool * volatile  global_sense,
-    long long int start = clock64(); 
     bool * volatile perSMsense,
     bool * volatile done,
     unsigned int* global_count,
@@ -328,16 +327,18 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
         g_odata[blockIdx.x] = sdata[0];
     }
     __syncthreads();
+ long long int start = clock64(); 
  kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM, naive);     
+ long long int stop = clock64();
+  if(i == 1){
+  *time += (stop - start);
+  }	 
+
     int* tmp = g_idata;
     g_idata = g_odata;
     g_odata = tmp;
 }
  *output = g_idata[0];
- long long int stop = clock64();
- if(i == 0){
-    *time += (stop - start);
-    }	
 }
 
 
