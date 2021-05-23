@@ -331,7 +331,7 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
  kernelAtomicTreeBarrierUniqSRB(global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM, naive);     
  long long int stop = clock64();
   if(i == 0){
-  *time = (stop - start);
+  *time += (stop - start);
   }	 
 
     int* tmp = g_idata;
