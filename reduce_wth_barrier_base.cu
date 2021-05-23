@@ -84,7 +84,8 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
     //std::cout << "time cuda only(ms) " << ms <<" barrier time is " << *time <<   std::endl;
-    printf("time cuda only(ms) is %f and barries time is %llu and clocrate is %d\n", ms, ((*time)/clockrate), clockrate) ;
+    btime = (float)((*time)/clockrate);
+    printf("time cuda only(ms) is %f and barries time is %f and clocrate is %d\n", ms, btime, clockrate) ;
     int sum = *output;
 
     cudaFree(a);
