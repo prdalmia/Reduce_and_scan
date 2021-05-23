@@ -33,13 +33,8 @@ namespace cg = cooperative_groups;
         g_odata[blockIdx.x] = sdata[0];
     }
     
-<<<<<<< HEAD
-   __syncthreads();
-
-=======
   // __syncthreads();
    long long int start = clock64(); 
->>>>>>> eeb7119da07ddbd7df6a3e430560b1641b49c437
     cg::grid_group grid = cg::this_grid(); 
     grid.sync();
   long long int stop = clock64();
