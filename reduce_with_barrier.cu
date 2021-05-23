@@ -398,7 +398,8 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaDeviceSynchronize();
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
-    printf("time cuda only(ms) is %f and barries time is %llu and clock rate is %d\n", ms, ((*time)/clockrate), clockrate) ;
+    float btime = ((*time)/clockrate);
+    printf("time cuda only(ms) is %f and barries time is %f and clock rate is %d\n", ms, btime, clockrate) ;
 
     int sum = *output;
 
