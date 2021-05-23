@@ -39,7 +39,7 @@ namespace cg = cooperative_groups;
     grid.sync();
   long long int stop = clock64();
   if(i == 0){
-  *time = (stop - start);
+  *time += (stop - start);
   }	  
     //__threadfence();
     
