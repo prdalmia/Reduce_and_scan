@@ -399,7 +399,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
     float btime = ((*time)/clockrate);
-    printf("time cuda only(ms) is %f and barries time is %f and clock rate is %d\n", ms, *time, clockrate) ;
+    printf("time cuda only(ms) is %f and barries time is %llu and clock rate is %llu\n", ms, *time, clockrate) ;
 
     int sum = *output;
 
