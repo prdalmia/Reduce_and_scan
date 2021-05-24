@@ -6,8 +6,7 @@
 #include <cooperative_groups.h>
 namespace cg = cooperative_groups;
 
- __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output, long long int* time) {
-    long long int start = clock64(); 
+ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output /*, long long int* time */ ) {
     extern __shared__ int sdata[];
   
     unsigned int tid = threadIdx.x;
@@ -48,11 +47,12 @@ namespace cg = cooperative_groups;
 }
 
 *output = g_idata[0];
-
+/*
 long long int stop = clock64();
 if(i == 0){
-    *time += (stop - start);
+    *time = (stop - start);
     }	
+*/
 }
 
 __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_block) {
@@ -60,14 +60,14 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     int* a;
     int* b;
     int* output;
-    long long int* time;
+    //long long int* time;
     cudaDeviceProp deviceProp;
     cudaGetDeviceProperties(&deviceProp, 0);
     int clockrate = deviceProp.clockRate;
     cudaMallocManaged(&a, N * sizeof(int));
     cudaMallocManaged(&b, N * sizeof(int));
     cudaMallocManaged(&output, sizeof(int));
-    cudaMallocManaged(&time, sizeof(long long int ));
+    //cudaMallocManaged(&time, sizeof(long long int ));
     cudaMemcpy(a, arr, N * sizeof(int), cudaMemcpyHostToDevice);
     cudaEvent_t start;
     cudaEvent_t stop;
@@ -77,7 +77,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     
 
     void *kernelArgs[] = {
-        (void *)&a,  (void *)&b, (void *)&N, (void *)&output , (void *)&time
+        (void *)&a,  (void *)&b, (void *)&N, (void *)&output /*, (void *)&time */
     };
     cudaEventRecord(start);
       cudaLaunchCooperativeKernel((void*)reduce_kernel, ((N + threads_per_block - 1) / threads_per_block), threads_per_block,  kernelArgs, threads_per_block * sizeof(int), 0);
@@ -86,7 +86,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
     //std::cout << "time cuda only(ms) " << ms <<" barrier time is " << *time <<   std::endl;
-    printf("time cuda only(ms) is %f and barries time is %llu and clocrate is %llu \n", ms, *time, clockrate) ;
+    printf("time cuda only(ms) is %f", ms) ;
     int sum = *output;
 
     cudaFree(a);

@@ -299,9 +299,8 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
     unsigned int* local_count,
     unsigned int* last_block,
     const int NUM_SM,
-    bool naive,
-    long long int* time) {
-        long long int start = clock64();     
+    bool naive) {
+      //  long long int start = clock64();     
     extern __shared__ int sdata[];
   
     unsigned int tid = threadIdx.x;
@@ -337,9 +336,9 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
     g_odata = tmp;
 }
  *output = g_idata[0];
- long long int stop = clock64();
- if(i == 1){
- *time += (stop - start);
+ //long long int stop = clock64();
+// if(i == 1){
+// *time = (stop - start);
  }	 
 }
 
@@ -352,7 +351,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     unsigned int* global_count;
     unsigned int* local_count; 
     unsigned int *last_block;
-    long long int* time;
+   // long long int* time;
     bool * volatile global_sense;
     bool* volatile perSMsense;
     bool * volatile done;
@@ -369,7 +368,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaMallocManaged((void **)&last_block,sizeof(unsigned int)*(NUM_SM));
     cudaMallocManaged((void **)&local_count,  NUM_SM*sizeof(unsigned int));
     cudaMallocManaged((void **)&global_count,sizeof(unsigned int));
-    cudaMallocManaged(&time, sizeof(long long int ));
+   // cudaMallocManaged(&time, sizeof(long long int ));
     int clockrate = deviceProp.clockRate;
     cudaMemset(global_sense, false, sizeof(bool));
     cudaMemset(done, false, sizeof(bool));
@@ -389,7 +388,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaEventRecord(start);
     //for (unsigned int n = N; n > 1; n = (n + threads_per_block - 1) / threads_per_block) {
         reduce_kernel<<<(N + threads_per_block - 1) / threads_per_block, threads_per_block,
-                        threads_per_block * sizeof(int)>>>(a, b, N, output, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM, naive, time);
+                        threads_per_block * sizeof(int)>>>(a, b, N, output, global_sense, perSMsense, done, global_count, local_count, last_block, NUM_SM, naive);
 
         // Swap input and output arrays
         //int* tmp = a;
@@ -400,8 +399,8 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaDeviceSynchronize();
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
-    float btime = ((*time)/clockrate);
-    printf("time cuda only(ms) is %f and barries time is %llu and clock rate is %llu\n", ms, *time, clockrate) ;
+   // float btime = ((*time)/clockrate);
+    printf("time cuda only(ms) is %f", ms) ;
 
     int sum = *output;
 
