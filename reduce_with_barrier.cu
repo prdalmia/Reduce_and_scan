@@ -339,7 +339,7 @@ __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* o
  //long long int stop = clock64();
 // if(i == 1){
 // *time = (stop - start);
- }	 
+ //}	 
 }
 
 
