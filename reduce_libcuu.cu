@@ -63,7 +63,7 @@ __host__ int reduce(const int* arr, unsigned int N, unsigned int threads_per_blo
     cudaGetDeviceProperties(&deviceProp, 0);
     barrier* sync_point;
     cudaMallocManaged(&sync_point, sizeof(barrier));
-    auto constexpr size = (N + threads_per_block - 1) / threads_per_block ;
+    auto size = (((N + threads_per_block - 1) / threads_per_block) * threads_per_block);
     new (sync_point) barrier(size);
     
     cudaMallocManaged(&a, N * sizeof(int));
