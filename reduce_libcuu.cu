@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "reduce.cuh"
 #include <cuda/std/barrier>
-using barrier = cuda::barrier<cuda::thread_scope_block>;
+using barrier = cuda::barrier<cuda::thread_scope_device>;
 
  __global__ void reduce_kernel(int* g_idata, int* g_odata, unsigned int N, int* output , barrier* sync_point ) {
     extern __shared__ int sdata[];
@@ -35,7 +35,7 @@ using barrier = cuda::barrier<cuda::thread_scope_block>;
     
   // __syncthreads();
    
-    sync_point.arrive_and_wait();
+    sync_point->arrive_and_wait();
    
     //__threadfence();
     
